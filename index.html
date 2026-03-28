@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#09090f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="April Skies">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>April Skies — Night Sky Guide April 2026</title>
+<style>
+  :root {
+    --bg:#09090f; --card:#141428; --border:rgba(255,255,255,0.08);
+    --border2:rgba(255,255,255,0.16); --text:#e8e8f0; --muted:#9090b0;
+    --dim:#5a5a80; --gold:#f0c040; --gold2:#b88a20; --teal:#40c0a0;
+    --purple:#9070d0; --warn:#e07030;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);color:var(--text);font-family:Georgia,'Times New Roman',serif;height:100%;overflow:hidden;}
+
+  /* ── TOP NAV ── */
+  #topnav{
+    position:fixed;top:0;left:0;right:0;height:38px;
+    background:rgba(9,9,15,0.98);backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;gap:3px;
+    z-index:300;padding:0 10px;overflow-x:auto;scrollbar-width:none;
+  }
+  #topnav::-webkit-scrollbar{display:none;}
+  #topnav a{
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5px;
+    color:var(--dim);text-decoration:none;padding:4px 9px;
+    border-radius:5px;border:1px solid transparent;
+    transition:color .15s,border-color .15s,background .15s;
+    letter-spacing:.04em;white-space:nowrap;cursor:pointer;flex-shrink:0;
+  }
+  #topnav a:hover{color:var(--muted);}
+  #topnav a.active{color:var(--gold);border-color:var(--gold2);background:rgba(240,192,64,0.07);}
+
+  /* ── OBJECT SUB-NAV ── */
+  #subnav{
+    position:fixed;top:38px;left:0;right:0;height:28px;
+    background:rgba(9,9,15,0.96);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+    display:none;align-items:center;justify-content:center;gap:2px;
+    z-index:299;padding:0 10px;overflow-x:auto;scrollbar-width:none;
+  }
+  #subnav::-webkit-scrollbar{display:none;}
+  #subnav.visible{display:flex;}
+  #subnav a{
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:9.5px;
+    color:var(--dim);text-decoration:none;padding:3px 8px;
+    border-radius:4px;border:1px solid transparent;
+    transition:color .15s,border-color .15s,background .15s;
+    letter-spacing:.04em;white-space:nowrap;cursor:pointer;flex-shrink:0;
+  }
+  #subnav a:hover{color:var(--muted);}
+  #subnav a.active{color:var(--teal);border-color:rgba(64,192,160,0.4);background:rgba(64,192,160,0.07);}
+
+  /* ── SLIDES ── */
+  #slides{position:fixed;left:0;right:0;bottom:0;overflow:hidden;}
+  .slide{
+    position:absolute;top:0;left:0;right:0;bottom:0;
+    overflow-y:auto;padding:26px 18px 56px;
+    opacity:0;transform:translateY(40px);
+    transition:opacity .42s ease,transform .42s ease;
+    pointer-events:none;
+    display:flex;flex-direction:column;align-items:center;
+  }
+  .slide.active{opacity:1;transform:translateY(0);pointer-events:all;}
+  .slide-inner{width:100%;max-width:720px;}
+
+  #progress{position:fixed;bottom:0;left:0;height:2px;background:var(--gold);transition:width .4s ease;z-index:400;opacity:.55;}
+  #counter{position:fixed;bottom:8px;right:12px;font-family:'Helvetica Neue',sans-serif;font-size:10px;color:var(--dim);letter-spacing:.08em;z-index:400;}
+
+  /* ── COVER ── */
+  .cover-wrap{text-align:center;padding:28px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 130px);}
+  .cover-dots{display:flex;gap:6px;justify-content:center;margin-bottom:22px;}
+  .cover-dot{width:5px;height:5px;border-radius:50%;background:var(--dim);}
+  .cover-dot.lit{background:var(--gold);}
+  .cover-title{font-size:clamp(46px,10vw,82px);font-weight:400;letter-spacing:-.025em;color:#fff;line-height:1;margin-bottom:6px;}
+  .cover-italic{font-style:italic;color:var(--gold);}
+  .cover-sub{font-size:12px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-family:'Helvetica Neue',sans-serif;margin:14px 0 24px;}
+  .spec-row{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:26px;}
+  .pill{font-family:'Helvetica Neue',sans-serif;font-size:11px;padding:4px 12px;border:1px solid var(--border2);border-radius:20px;color:var(--muted);letter-spacing:.04em;}
+  .pill.hi{border-color:var(--gold2);color:var(--gold);}
+  .cover-hint{display:flex;align-items:center;gap:8px;font-family:'Helvetica Neue',sans-serif;font-size:11px;color:var(--dim);flex-wrap:wrap;justify-content:center;}
+  .cover-hint kbd{display:inline-block;padding:2px 7px;border:1px solid var(--border2);border-radius:4px;font-size:10px;color:var(--muted);font-family:'Helvetica Neue',sans-serif;background:rgba(255,255,255,0.04);}
+  .cover-arrow{font-size:18px;color:var(--gold);display:block;margin-top:14px;animation:bounce 2s ease-in-out infinite;}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+
+  /* ── TYPOGRAPHY ── */
+  h2.stitle{font-size:clamp(19px,4vw,27px);font-weight:400;color:#fff;margin-bottom:4px;}
+  .sintro{font-size:12px;color:var(--muted);font-family:'Helvetica Neue',sans-serif;margin-bottom:15px;letter-spacing:.03em;}
+
+  /* ── PLANNER ── */
+  .planner-wrap{overflow-x:auto;}
+  table.planner{width:100%;border-collapse:collapse;font-family:'Helvetica Neue',sans-serif;font-size:12px;}
+  table.planner th{text-align:left;padding:7px 9px;color:var(--dim);font-weight:400;letter-spacing:.08em;text-transform:uppercase;font-size:10px;border-bottom:1px solid var(--border2);}
+  table.planner td{padding:8px 9px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top;}
+  table.planner tr:hover td{background:rgba(255,255,255,0.02);}
+  .moon-warn{color:var(--warn);font-size:11px;}
+  .dark-win{color:var(--teal);font-size:11px;}
+  .er{display:flex;gap:2px;align-items:center;}
+  .sf{width:10px;height:10px;background:var(--gold);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);flex-shrink:0;}
+  .se{width:10px;height:10px;background:#2a2a4a;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);flex-shrink:0;}
+
+  /* ── MOON ── */
+  .phase-strip{display:flex;overflow-x:auto;padding:10px 0 12px;scrollbar-width:none;}
+  .phase-strip::-webkit-scrollbar{display:none;}
+  .phase-day{text-align:center;min-width:21px;}
+  .phase-day .dn{font-size:8px;color:var(--dim);font-family:'Helvetica Neue',sans-serif;display:block;margin-bottom:1px;}
+  .phase-day .pm{font-size:14px;display:block;}
+  .phase-day.nm .pm{filter:drop-shadow(0 0 4px rgba(240,192,64,0.9));}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .feat-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px;}
+  .feat-card h4{font-size:12px;font-weight:400;color:var(--gold);font-family:'Helvetica Neue',sans-serif;margin-bottom:5px;letter-spacing:.04em;}
+  .feat-card p{font-size:12px;color:var(--muted);line-height:1.6;}
+  .feat-card .best{font-size:11px;color:var(--teal);margin-top:5px;font-family:'Helvetica Neue',sans-serif;}
+
+  /* ── PLANETS ── */
+  .planet-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:12px;}
+  .pcard{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;}
+  .pcard h3{font-size:18px;font-weight:400;color:#fff;margin-bottom:9px;}
+  .prow{display:flex;justify-content:space-between;font-size:12px;font-family:'Helvetica Neue',sans-serif;padding:5px 0;border-bottom:1px solid var(--border);}
+  .prow:last-of-type{border-bottom:none;}
+  .prow .lbl{color:var(--dim);}
+  .prow .val{color:var(--text);}
+  .pcard-note{font-size:11px;color:var(--muted);font-style:italic;margin-top:9px;line-height:1.5;}
+  .pcard-ease{margin-top:8px;display:flex;gap:3px;}
+  .bonus{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:11px 13px;margin-bottom:9px;}
+  .bonus h4{font-size:12px;color:var(--teal);font-family:'Helvetica Neue',sans-serif;font-weight:500;margin-bottom:4px;}
+  .bonus p{font-size:12px;color:var(--muted);line-height:1.6;}
+  .bonus.wb{border-left-color:var(--warn);}
+  .bonus.wb h4{color:#c08060;}
+
+  /* ── OBJECT CARD ── */
+  .obj-card{background:var(--card);border:1px solid var(--border2);border-radius:12px;overflow:hidden;}
+  .obj-head{padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;}
+  .obj-name{font-size:18px;font-weight:400;color:#fff;}
+  .obj-type{font-size:11px;color:var(--muted);font-family:'Helvetica Neue',sans-serif;margin-top:3px;letter-spacing:.03em;}
+  .ease-label{font-size:10px;color:var(--dim);font-family:'Helvetica Neue',sans-serif;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;text-align:right;}
+  .obj-meta{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);}
+  .obj-meta-item{padding:8px 12px;border-right:1px solid var(--border);}
+  .obj-meta-item:last-child{border-right:none;}
+  .mk{font-size:10px;color:var(--dim);font-family:'Helvetica Neue',sans-serif;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+  .mv{font-size:12px;color:var(--text);font-family:'Helvetica Neue',sans-serif;}
+  .obj-body{display:grid;grid-template-columns:1fr 142px;}
+  .obj-desc{padding:12px 14px;border-right:1px solid var(--border);}
+  .obj-desc h4{font-size:10px;color:var(--dim);font-family:'Helvetica Neue',sans-serif;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+  .obj-desc p{font-size:12.5px;color:var(--muted);line-height:1.65;}
+  .obj-sketch-col{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:6px;}
+  /* two-sketch variant */
+  .obj-body.two-sketch{grid-template-columns:1fr;}
+  .obj-body.two-sketch .obj-desc{border-right:none;border-bottom:1px solid var(--border);}
+  .two-sketch-row{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border);}
+  .two-sketch-cell{display:flex;flex-direction:column;align-items:center;padding:12px;gap:6px;border-right:1px solid var(--border);}
+  .two-sketch-cell:last-child{border-right:none;}
+  .sketch-lbl{font-size:10px;color:var(--dim);font-family:'Helvetica Neue',sans-serif;text-align:center;line-height:1.4;}
+  .obj-finder{padding:9px 14px 12px;border-top:1px solid var(--border);}
+  .obj-finder h4{font-size:10px;color:var(--dim);font-family:'Helvetica Neue',sans-serif;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+  .obj-finder p{font-size:12px;color:var(--muted);line-height:1.6;}
+  .obj-note{padding:7px 14px;border-top:1px solid var(--border);font-size:11px;color:#c08060;font-family:'Helvetica Neue',sans-serif;line-height:1.5;background:rgba(224,112,48,0.06);}
+
+  /* ── CONDITIONS ── */
+  .cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:16px;}
+  .cond-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px;}
+  .cond-box h4{font-size:12px;color:var(--gold);font-family:'Helvetica Neue',sans-serif;font-weight:400;margin-bottom:5px;}
+  .cond-box p{font-size:12px;color:var(--muted);line-height:1.6;}
+  .checklist{list-style:none;margin-bottom:18px;}
+  .checklist li{display:flex;gap:10px;font-size:12px;color:var(--muted);padding:7px 0;border-bottom:1px solid var(--border);line-height:1.5;}
+  .checklist li:last-child{border-bottom:none;}
+  .chk{color:var(--border2);flex-shrink:0;}
+  .log-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  .log-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px;}
+  .log-box h4{font-size:10px;color:var(--dim);font-family:'Helvetica Neue',sans-serif;text-transform:uppercase;letter-spacing:.08em;margin-bottom:9px;}
+  .log-line{font-size:11px;color:var(--dim);font-family:'Helvetica Neue',sans-serif;border-bottom:1px solid var(--border);padding:5px 0;}
+  .sketch-pair{display:flex;gap:12px;justify-content:center;padding-top:4px;}
+  .sketch-mini{text-align:center;}
+  .sketch-mini span{font-size:9px;color:var(--dim);font-family:'Helvetica Neue',sans-serif;display:block;margin-top:4px;}
+
+  /* ── GLOSSARY ── */
+  .gloss-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
+  .gloss-item{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:9px 11px;}
+  .gloss-term{font-size:12px;color:var(--gold);font-family:'Helvetica Neue',sans-serif;margin-bottom:3px;}
+  .gloss-def{font-size:11px;color:var(--muted);line-height:1.5;}
+  .limit-box{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--purple);border-radius:0 8px 8px 0;padding:11px 13px;font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:18px;}
+  .quote-box{text-align:center;padding:18px;font-style:italic;color:var(--dim);font-size:13px;border-top:1px solid var(--border);}
+
+  @media(max-width:520px){
+    #topnav{justify-content:flex-start;}
+    #subnav{justify-content:flex-start;}
+    .planet-grid,.two-col,.cond-grid,.log-grid,.gloss-grid{grid-template-columns:1fr;}
+    .obj-body{grid-template-columns:1fr;}
+    .obj-body .obj-sketch-col{border-left:none;border-top:1px solid var(--border);}
+    .two-sketch-row{grid-template-columns:1fr;}
+    .two-sketch-cell{border-right:none;border-bottom:1px solid var(--border);}
+    .two-sketch-cell:last-child{border-bottom:none;}
+    .obj-meta{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+<nav id="topnav"></nav>
+<div id="subnav"></div>
+<div id="slides"></div>
+<div id="progress"></div>
+<div id="counter"></div>
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────────
+const SLIDES=[
+  {id:'cover',      label:'Cover',       group:null},
+  {id:'planner',    label:'Planner',     group:null},
+  {id:'moon',       label:'Moon',        group:null},
+  {id:'planets',    label:'Planets',     group:null},
+  {id:'objects',    label:'Objects',     group:null, isGroup:true},
+  {id:'m42',        label:'M42',         group:'objects'},
+  {id:'m4647',      label:'M46 / M47',   group:'objects'},
+  {id:'m44',        label:'M44',         group:'objects'},
+  {id:'m3',         label:'M3',          group:'objects'},
+  {id:'algieba',    label:'Algieba',     group:'objects'},
+  {id:'leo',        label:'Leo Triplet', group:'objects'},
+  {id:'m51',        label:'M51',         group:'objects'},
+  {id:'conditions', label:'Conditions',  group:null},
+  {id:'glossary',   label:'Glossary',    group:null},
+];
+const RENDERABLE=SLIDES.filter(s=>!s.isGroup);
+
+function E(n){return Array.from({length:5},(_,i)=>`<div class="${i<n?'sf':'se'}"></div>`).join('');}
+const PH=['🌕','🌕','🌖','🌖','🌖','🌖','🌗','🌗','🌗','🌗','🌘','🌘','🌘','🌘','🌑','🌑','🌑','🌒','🌒','🌒','🌓','🌓','🌓','🌓','🌔','🌔','🌔','🌔','🌔','🌕'];
+const phStrip=PH.map((p,i)=>`<div class="phase-day${i===16?' nm':''}"><span class="dn">${i+1}</span><span class="pm">${p}</span></div>`).join('');
+
+// ── SKETCHES ──────────────────────────────────────────────────────────────────
+const SK={
+m42:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_m42"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m42)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><ellipse cx="70" cy="72" rx="34" ry="28" fill="#3a3060" opacity=".45" transform="rotate(-15 70 72)"/><ellipse cx="62" cy="68" rx="24" ry="18" fill="#5040a0" opacity=".4" transform="rotate(-20 62 68)"/><ellipse cx="78" cy="76" rx="20" ry="14" fill="#4838a0" opacity=".35" transform="rotate(10 78 76)"/><ellipse cx="70" cy="70" rx="12" ry="10" fill="#7868c8" opacity=".55"/><ellipse cx="70" cy="70" rx="6" ry="5" fill="#c0b0f0" opacity=".7"/><circle cx="69" cy="69" r="1.4" fill="#fff" opacity=".98"/><circle cx="72" cy="68" r="1.2" fill="#fff" opacity=".92"/><circle cx="71" cy="72" r="1.1" fill="#fff" opacity=".88"/><circle cx="67" cy="71" r="1.0" fill="#fff" opacity=".85"/><circle cx="40" cy="38" r="1.8" fill="#ffe8c0" opacity=".9"/><circle cx="100" cy="45" r="1.4" fill="#fff" opacity=".7"/><circle cx="32" cy="80" r="1.2" fill="#fff" opacity=".6"/><circle cx="108" cy="90" r="1.0" fill="#fff" opacity=".55"/><circle cx="55" cy="110" r="1.2" fill="#fff" opacity=".5"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
+
+// M47 — brighter, looser
+m47:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_m47"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m47)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="58" cy="58" r="2.6" fill="#ffe8c0" opacity=".95"/><circle cx="46" cy="50" r="2.0" fill="#fff" opacity=".88"/><circle cx="70" cy="46" r="1.8" fill="#ffe8c0" opacity=".85"/><circle cx="82" cy="54" r="1.6" fill="#fff" opacity=".8"/><circle cx="50" cy="68" r="2.2" fill="#fff" opacity=".85"/><circle cx="66" cy="74" r="2.0" fill="#ffe8c0" opacity=".85"/><circle cx="80" cy="66" r="1.8" fill="#fff" opacity=".78"/><circle cx="44" cy="78" r="1.4" fill="#fff" opacity=".7"/><circle cx="74" cy="84" r="1.6" fill="#fff" opacity=".72"/><circle cx="88" cy="72" r="1.4" fill="#fff" opacity=".68"/><circle cx="36" cy="62" r="1.2" fill="#fff" opacity=".6"/><circle cx="56" cy="88" r="1.2" fill="#fff" opacity=".58"/><circle cx="92" cy="52" r="1.0" fill="#fff" opacity=".52"/><circle cx="40" cy="90" r="1.0" fill="#fff" opacity=".48"/><circle cx="84" cy="86" r="1.0" fill="#fff" opacity=".48"/><circle cx="30" cy="46" r="0.9" fill="#fff" opacity=".4"/><circle cx="96" cy="38" r="0.9" fill="#fff" opacity=".38"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
+
+// M46 — denser, more uniform fainter stars + NGC 2438 ghost
+m46:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_m46"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m46)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="56" cy="50" r="1.0" fill="#fff" opacity=".72"/><circle cx="66" cy="44" r="0.9" fill="#fff" opacity=".68"/><circle cx="78" cy="48" r="1.1" fill="#fff" opacity=".74"/><circle cx="88" cy="56" r="1.0" fill="#fff" opacity=".7"/><circle cx="92" cy="68" r="0.9" fill="#fff" opacity=".66"/><circle cx="86" cy="80" r="1.0" fill="#fff" opacity=".7"/><circle cx="74" cy="88" r="0.9" fill="#fff" opacity=".65"/><circle cx="62" cy="86" r="1.1" fill="#fff" opacity=".7"/><circle cx="50" cy="78" r="1.0" fill="#fff" opacity=".68"/><circle cx="46" cy="66" r="0.9" fill="#fff" opacity=".64"/><circle cx="50" cy="56" r="0.9" fill="#fff" opacity=".65"/><circle cx="70" cy="56" r="0.9" fill="#fff" opacity=".65"/><circle cx="80" cy="62" r="1.0" fill="#fff" opacity=".67"/><circle cx="82" cy="74" r="0.9" fill="#fff" opacity=".63"/><circle cx="74" cy="80" r="0.9" fill="#fff" opacity=".64"/><circle cx="60" cy="78" r="1.0" fill="#fff" opacity=".66"/><circle cx="56" cy="66" r="0.9" fill="#fff" opacity=".63"/><circle cx="62" cy="60" r="0.9" fill="#fff" opacity=".64"/><circle cx="70" cy="64" r="0.8" fill="#fff" opacity=".6"/><circle cx="76" cy="70" r="0.8" fill="#fff" opacity=".6"/><circle cx="64" cy="70" r="0.8" fill="#fff" opacity=".58"/><circle cx="40" cy="72" r="0.8" fill="#fff" opacity=".5"/><circle cx="96" cy="78" r="0.8" fill="#fff" opacity=".48"/><circle cx="58" cy="38" r="0.8" fill="#fff" opacity=".46"/><circle cx="84" cy="40" r="0.8" fill="#fff" opacity=".44"/><circle cx="104" cy="62" r="0.7" fill="#fff" opacity=".42"/><circle cx="38" cy="56" r="0.7" fill="#fff" opacity=".42"/><circle cx="72" cy="100" r="0.7" fill="#fff" opacity=".4"/><circle cx="48" cy="94" r="0.7" fill="#fff" opacity=".4"/><circle cx="96" cy="90" r="0.7" fill="#fff" opacity=".38"/><circle cx="70" cy="40" r="0.7" fill="#fff" opacity=".4"/><!-- NGC 2438 planetary nebula — ghostly ring on north edge --><circle cx="70" cy="46" r="7" fill="none" stroke="#7090c0" stroke-width="1.2" opacity=".6"/><circle cx="70" cy="46" r="3" fill="#90b0d8" opacity=".35"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
+
+m44:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_m44"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m44)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="44" cy="52" r="2.2" fill="#fff" opacity=".95"/><circle cx="60" cy="40" r="1.6" fill="#ffe8c0" opacity=".9"/><circle cx="78" cy="44" r="2.0" fill="#fff" opacity=".9"/><circle cx="95" cy="50" r="1.4" fill="#fff" opacity=".8"/><circle cx="52" cy="62" r="1.8" fill="#ffe8c0" opacity=".85"/><circle cx="68" cy="58" r="2.4" fill="#fff" opacity="1"/><circle cx="85" cy="60" r="1.6" fill="#ffe8c0" opacity=".9"/><circle cx="100" cy="64" r="1.2" fill="#fff" opacity=".7"/><circle cx="38" cy="68" r="1.4" fill="#fff" opacity=".75"/><circle cx="55" cy="72" r="2.0" fill="#fff" opacity=".95"/><circle cx="72" cy="70" r="1.8" fill="#ffe8c0" opacity=".9"/><circle cx="90" cy="74" r="2.2" fill="#fff" opacity=".95"/><circle cx="46" cy="82" r="1.6" fill="#ffe8c0" opacity=".8"/><circle cx="63" cy="86" r="2.0" fill="#fff" opacity=".9"/><circle cx="80" cy="84" r="1.4" fill="#fff" opacity=".85"/><circle cx="97" cy="82" r="1.8" fill="#ffe8c0" opacity=".8"/><circle cx="58" cy="96" r="1.4" fill="#fff" opacity=".7"/><circle cx="75" cy="98" r="2.0" fill="#fff" opacity=".85"/><circle cx="92" cy="94" r="1.2" fill="#fff" opacity=".65"/><circle cx="42" cy="95" r="1.0" fill="#fff" opacity=".6"/><circle cx="66" cy="28" r="1.0" fill="#fff" opacity=".5"/><circle cx="84" cy="32" r="1.0" fill="#fff" opacity=".45"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
+
+m3:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_m3"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m3)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="70" cy="70" r="26" fill="#3a3a5c" opacity=".5"/><circle cx="70" cy="70" r="16" fill="#6060a0" opacity=".5"/><circle cx="70" cy="70" r="8" fill="#c0c0e8" opacity=".65"/><circle cx="70" cy="70" r="4" fill="#fff" opacity=".95"/><circle cx="56" cy="58" r="1.0" fill="#fff" opacity=".7"/><circle cx="62" cy="54" r=".8" fill="#fff" opacity=".6"/><circle cx="70" cy="52" r=".8" fill="#fff" opacity=".55"/><circle cx="78" cy="55" r="1.0" fill="#fff" opacity=".7"/><circle cx="84" cy="60" r=".8" fill="#fff" opacity=".6"/><circle cx="86" cy="68" r=".8" fill="#fff" opacity=".55"/><circle cx="84" cy="76" r="1.0" fill="#fff" opacity=".65"/><circle cx="78" cy="83" r=".8" fill="#fff" opacity=".6"/><circle cx="70" cy="86" r=".8" fill="#fff" opacity=".5"/><circle cx="62" cy="84" r="1.0" fill="#fff" opacity=".65"/><circle cx="56" cy="78" r=".8" fill="#fff" opacity=".6"/><circle cx="54" cy="70" r=".8" fill="#fff" opacity=".55"/><circle cx="30" cy="72" r="1.2" fill="#fff" opacity=".65"/><circle cx="108" cy="55" r=".9" fill="#fff" opacity=".45"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
+
+algieba:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_alg"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_alg)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="58" cy="70" r="10" fill="none" stroke="#e8b040" stroke-width=".5" opacity=".15"/><circle cx="58" cy="70" r="6" fill="none" stroke="#e8b040" stroke-width=".6" opacity=".2"/><circle cx="58" cy="70" r="4.5" fill="#f0c060" opacity=".98"/><circle cx="58" cy="70" r="2.2" fill="#fff8e0" opacity="1"/><circle cx="75" cy="70" r="3.0" fill="#e8b848" opacity=".92"/><circle cx="75" cy="70" r="1.4" fill="#fff0c0" opacity=".95"/><circle cx="30" cy="40" r="1.0" fill="#fff" opacity=".45"/><circle cx="108" cy="38" r=".8" fill="#fff" opacity=".4"/><circle cx="22" cy="95" r=".9" fill="#fff" opacity=".4"/><circle cx="112" cy="100" r=".8" fill="#fff" opacity=".35"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
+
+leo:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_leo"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_leo)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><ellipse cx="50" cy="56" rx="10" ry="6" fill="#4a4a7a" opacity=".55" transform="rotate(-20 50 56)"/><ellipse cx="50" cy="56" rx="5" ry="3" fill="#8888bb" opacity=".6" transform="rotate(-20 50 56)"/><circle cx="50" cy="56" r="1.5" fill="#ccccee" opacity=".9"/><ellipse cx="82" cy="60" rx="11" ry="6.5" fill="#4a4a7a" opacity=".5" transform="rotate(-15 82 60)"/><ellipse cx="82" cy="60" rx="5.5" ry="3" fill="#8888bb" opacity=".55" transform="rotate(-15 82 60)"/><circle cx="82" cy="60" r="1.5" fill="#ccccee" opacity=".85"/><ellipse cx="66" cy="90" rx="14" ry="4" fill="#3a3a6a" opacity=".4" transform="rotate(5 66 90)"/><ellipse cx="66" cy="90" rx="7" ry="2" fill="#6060a0" opacity=".35" transform="rotate(5 66 90)"/><circle cx="66" cy="90" r="1.2" fill="#aaaacc" opacity=".65"/><circle cx="28" cy="34" r="1.0" fill="#fff" opacity=".5"/><circle cx="112" cy="42" r=".8" fill="#fff" opacity=".4"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
+
+m51:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_m51"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m51)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="64" cy="74" r="18" fill="#2a2a50" opacity=".5"/><circle cx="64" cy="74" r="12" fill="#4444a0" opacity=".45"/><circle cx="64" cy="74" r="7" fill="#8080c8" opacity=".55"/><circle cx="64" cy="74" r="3" fill="#e0e0ff" opacity=".95"/><circle cx="84" cy="56" r="9" fill="#2a2a48" opacity=".45"/><circle cx="84" cy="56" r="5" fill="#5858a0" opacity=".5"/><circle cx="84" cy="56" r="2.5" fill="#c0c0e8" opacity=".9"/><path d="M73 67 Q79 61 83 58" stroke="#7070b0" stroke-width=".8" fill="none" opacity=".3"/><circle cx="28" cy="38" r="1.1" fill="#fff" opacity=".55"/><circle cx="112" cy="34" r=".9" fill="#fff" opacity=".45"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`
+};
+
+// ── SLIDE CONTENT ─────────────────────────────────────────────────────────────
+const C={
+cover:`<div class="cover-wrap">
+  <div class="cover-dots"><div class="cover-dot lit"></div><div class="cover-dot lit"></div><div class="cover-dot"></div><div class="cover-dot lit"></div><div class="cover-dot"></div><div class="cover-dot lit"></div><div class="cover-dot"></div><div class="cover-dot lit"></div><div class="cover-dot lit"></div></div>
+  <p style="font-size:11px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;font-family:'Helvetica Neue',sans-serif;margin-bottom:12px;">Northern Hemisphere · April 2026</p>
+  <h1 class="cover-title">April <span class="cover-italic">Skies</span></h1>
+  <p class="cover-sub">A reflector telescope interactive guide</p>
+  <div class="spec-row">
+    <span class="pill hi">114mm reflector</span><span class="pill hi">f/7.9</span>
+    <span class="pill">25mm → 36×</span><span class="pill">9mm → 100×</span><span class="pill">FOV 1.4° / 0.5°</span>
+  </div>
+  <div class="cover-hint"><kbd>Space</kbd> or <kbd>→</kbd> to advance &nbsp;·&nbsp; <kbd>←</kbd> to go back &nbsp;·&nbsp; or tap nav above</div>
+  <span class="cover-arrow">↓</span>
+</div>`,
+
+planner:`<h2 class="stitle">April sky planner</h2>
+<p class="sintro">Full Moon Apr 2 · Last Qtr Apr 10 · New Moon Apr 17 · First Qtr Apr 24</p>
+<div class="planner-wrap"><table class="planner">
+<thead><tr><th>Dates</th><th>Best targets</th><th>Best time</th><th>Ease</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Apr 1–3</td><td>Moon, Venus, Jupiter, M42 &amp; M46/47 (low SW)</td><td>8–10pm</td><td><div class="er">${E(5)}</div></td><td><span class="moon-warn">Full Moon — skip faint deep sky</span></td></tr>
+<tr><td>Apr 1–12</td><td>M42 Orion Nebula, M46 &amp; M47 separately</td><td>8:30–10pm</td><td><div class="er">${E(4)}</div></td><td><span class="moon-warn">Window closing — Orion/Puppis sets ~11pm</span></td></tr>
+<tr><td>Apr 4–9</td><td>Moon craters, Algieba double star</td><td>10pm–1am</td><td><div class="er">${E(3)}</div></td><td>Moon sets ~2am, improving each night</td></tr>
+<tr><td>Apr 10–16</td><td>M44, M3, Algieba, Leo Triplet</td><td>10pm–2am</td><td><div class="er">${E(4)}</div></td><td>Good dark window after midnight</td></tr>
+<tr><td style="color:#fff;font-weight:500">Apr 17–20</td><td style="color:#fff">All spring objects — best of month</td><td>9pm–3am</td><td><div class="er">${E(5)}</div></td><td><span class="dark-win">New Moon Apr 17 — darkest skies</span></td></tr>
+<tr><td>Apr 21–22</td><td>Lyrid meteors + all deep sky objects</td><td>10pm–4am</td><td><div class="er">${E(5)}</div></td><td><span class="dark-win">Lyrid peak — 10–15/hr, Moon down</span></td></tr>
+<tr><td>Apr 10–20</td><td>Comet C/2025 R3 pre-dawn (mag ~8)</td><td>90min before sunrise</td><td><div class="er">${E(2)}</div></td><td>Low east, enters solar glare after Apr 20</td></tr>
+<tr><td>Apr 28–30</td><td>Moon craters (waxing gibbous)</td><td>8–11pm</td><td><div class="er">${E(4)}</div></td><td><span class="moon-warn">Moon brightening — deep sky fading</span></td></tr>
+</tbody>
+</table></div>
+<p style="font-size:12px;color:var(--dim);margin-top:11px;font-family:'Helvetica Neue',sans-serif;">Orion/Puppis → low SW 8:30pm · Leo/Virgo → due south 11pm · M44 → south-SW · M3 → east-SE by midnight</p>`,
+
+moon:`<h2 class="stitle">The Moon</h2>
+<p class="sintro">Phase calendar — April 2026. New Moon Apr 17 is your darkest night.</p>
+<div class="phase-strip">${phStrip}</div>
+<div class="two-col">
+  <div class="feat-card"><h4>Clavius crater</h4><p>One of the largest craters on the Moon. At 100× look for smaller craters inside it along the southern terminator — a crater within a crater.</p><p class="best">Best: Apr 19–21 · 9mm (100×)</p></div>
+  <div class="feat-card"><h4>Apennine mountains</h4><p>Dramatic range bordering Mare Imbrium. Peaks cast sharp black shadows at low illumination near the terminator — spectacular at 36×.</p><p class="best">Best: Apr 20–22 · 25mm (36×)</p></div>
+  <div class="feat-card"><h4>Tycho crater</h4><p>Young, sharp-walled crater in the southern highlands. Famous ray system visible at full moon; walls most dramatic just after new moon Apr 19–20.</p><p class="best">Best: Apr 19–20 · 9mm (100×)</p></div>
+  <div class="feat-card"><h4>Earthshine</h4><p>Ghostly glow on the dark limb of the crescent Moon. Naked eye or binoculars only — the telescope makes it too bright to appreciate.</p><p class="best">Apr 13–14 pre-dawn · Apr 20–21 post-sunset</p></div>
+</div>`,
+
+planets:`<h2 class="stitle">Planets this month</h2>
+<div class="planet-grid">
+  <div class="pcard"><h3>Venus</h3>
+    <div class="prow"><span class="lbl">Constellation</span><span class="val">Aries → Taurus</span></div>
+    <div class="prow"><span class="lbl">Visible</span><span class="val">After sunset, SW sky</span></div>
+    <div class="prow"><span class="lbl">Sets after Sun</span><span class="val">2–2.75 hrs</span></div>
+    <div class="prow"><span class="lbl">Brightness</span><span class="val">mag −3.8</span></div>
+    <div class="prow"><span class="lbl">At 36× (25mm)</span><span class="val">Bright disc, gibbous phase</span></div>
+    <div class="prow"><span class="lbl">At 100× (9mm)</span><span class="val">Phase clearly visible</span></div>
+    <p class="pcard-note">Very bright — may bloom without filter. Passes near the Pleiades mid-April. Moon nearby Apr 18.</p>
+    <div class="pcard-ease">${E(5)}</div>
+  </div>
+  <div class="pcard"><h3>Jupiter</h3>
+    <div class="prow"><span class="lbl">Constellation</span><span class="val">Gemini</span></div>
+    <div class="prow"><span class="lbl">Visible</span><span class="val">Evening, SW sky</span></div>
+    <div class="prow"><span class="lbl">Sets after sunset</span><span class="val">2–3 hrs</span></div>
+    <div class="prow"><span class="lbl">Brightness</span><span class="val">mag −2.0</span></div>
+    <div class="prow"><span class="lbl">At 36× (25mm)</span><span class="val">Disc + 4 Galilean moons</span></div>
+    <div class="prow"><span class="lbl">At 100× (9mm)</span><span class="val">Cloud bands visible</span></div>
+    <p class="pcard-note">Galilean moons (Io, Europa, Ganymede, Callisto) change positions nightly. Moon nearby Apr 22.</p>
+    <div class="pcard-ease">${E(5)}</div>
+  </div>
+</div>
+<div class="bonus wb"><h4>Mars — pre-dawn only, very difficult in April</h4><p>Mars is a morning planet rising low in the east before dawn. Extremely difficult from northern latitudes in April due to low altitude. Skip until autumn 2026 when it returns to evening skies at a useful elevation.</p></div>
+<div class="bonus"><h4>Comet C/2025 R3 — pre-dawn window Apr 10–20 only</h4><p>Magnitude ~8 comet in Pegasus/Pisces, visible through binoculars or at 36× (25mm) about 90 min before sunrise, low in the eastern sky. It enters solar glare around Apr 20–25. Appears as a fuzzy smudge, possibly with a faint tail. Check sky reports before going out.</p></div>
+<div class="bonus"><h4>Lyrid meteor shower — peak night Apr 21–22</h4><p>10–15 meteors/hr at peak. Radiant near Vega in Lyra, rising NE from 10pm. Best after midnight. Moon sets before midnight leaving excellent dark skies. No telescope needed.</p></div>
+<div class="bonus"><h4>Comet C/2026 A1 (MAPS) — around Apr 4–6</h4><p>A sungrazer at perihelion in early April. Potentially visible in evening twilight low in the west around Apr 4–6, but extremely close to the Sun. Requires an unobstructed western horizon. Check reports night-by-night — it may not survive perihelion.</p></div>`,
+
+m42:`<div class="obj-card">
+  <div class="obj-head">
+    <div><div class="obj-name">M42 — Orion Nebula</div><div class="obj-type">Emission nebula · Orion · mag 4.0 · 1,350 ly</div></div>
+    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px;justify-content:flex-end">${E(5)}</div></div>
+  </div>
+  <div class="obj-note">⚠ April window closing fast — Orion is setting. Observe 8:30–10pm in the first two weeks of April only, low in the southwest. Essentially gone from useful observing by mid-April.</div>
+  <div class="obj-meta">
+    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 1–12</div></div>
+    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">8:30–10pm only</div></div>
+    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">Low SW, sinking</div></div>
+  </div>
+  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
+    <div class="obj-meta-item"><div class="mk">Start with</div><div class="mv">25mm (36×)</div></div>
+    <div class="obj-meta-item"><div class="mk">Then try</div><div class="mv">9mm (100×)</div></div>
+    <div class="obj-meta-item"><div class="mk">Moon caution</div><div class="mv">Survives most phases</div></div>
+  </div>
+  <div class="obj-body">
+    <div class="obj-desc"><h4>What you will see</h4><p>At 36× an unmistakable fan-shaped glow — the two brightest lobes of the nebula spread like wings around a bright core. At 100× the Trapezium becomes the showpiece: four hot young stars arranged in a tiny trapezoid at the nebula's heart, clearly split as individual pinpoints. The surrounding nebulosity takes on texture — brighter regions, darker bays. One of the most spectacular objects any telescope can show.</p></div>
+    <div class="obj-sketch-col">${SK.m42}<div class="sketch-lbl">25mm · 36×<br>fan glow + Trapezium</div></div>
+  </div>
+  <div class="obj-finder"><h4>How to find it</h4><p>Find Orion's Belt — three stars in a row, low in the SW. Below the belt hangs Orion's Sword: a short chain of fainter stars. The middle "star" of the sword is fuzzy — that's M42. It's completely unmistakable once you know to look for the fuzziness.</p></div>
+</div>`,
+
+m4647:`<div class="obj-card">
+  <div class="obj-head">
+    <div><div class="obj-name">M46 &amp; M47 — Twin Clusters</div><div class="obj-type">Open clusters · Puppis · mag 6.1 (M46) / 4.2 (M47) · observe separately at 36×</div></div>
+    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px;justify-content:flex-end">${E(4)}</div></div>
+  </div>
+  <div class="obj-note">⚠ Early April only — low in the SW, sinking fast. Observe as soon as it's fully dark. Not usefully visible after mid-April from northern latitudes.</div>
+  <div class="obj-meta">
+    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 1–10</div></div>
+    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">8:30–10:30pm</div></div>
+    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">Low SW, Puppis</div></div>
+  </div>
+  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
+    <div class="obj-meta-item"><div class="mk">Use</div><div class="mv">25mm (36×) each</div></div>
+    <div class="obj-meta-item"><div class="mk">Separation</div><div class="mv">~1.3° apart</div></div>
+    <div class="obj-meta-item"><div class="mk">Bonus in M46</div><div class="mv">NGC 2438 nebula</div></div>
+  </div>
+  <div class="obj-body two-sketch">
+    <div class="obj-desc"><h4>What you will see</h4><p>M46 and M47 are 1.3° apart — just outside your 1.4° true FOV at 36×, so observe them separately, then mentally connect the pair. <strong style="color:var(--text);font-weight:normal">M47</strong> is the showpiece: a bright, loose scatter of prominent stars including several with a warm yellow-orange tinge. <strong style="color:var(--text);font-weight:normal">M46</strong> is a complete contrast — a much denser, more uniform cluster of fainter stars, like a fine dusting of salt. At 100× look carefully on M46's northern edge for NGC 2438: a tiny, faint circular smudge — a foreground planetary nebula that just happens to sit in front of the cluster.</p></div>
+  </div>
+  <div class="two-sketch-row">
+    <div class="two-sketch-cell">${SK.m47}<div class="sketch-lbl">M47 · 25mm · 36×<br>bright &amp; loose</div></div>
+    <div class="two-sketch-cell">${SK.m46}<div class="sketch-lbl">M46 · 25mm · 36×<br>dense · NGC 2438 ring visible</div></div>
+  </div>
+  <div class="obj-finder"><h4>How to find it</h4><p>Find Sirius — the brightest star in the sky, blazing in the SW. Scan about 12–14° to the east and slightly north (roughly 1.5 fist-widths). M47 appears first as a bright fuzzy patch; M46 is ~1.3° further east. Sweep between them at low power to appreciate the contrast.</p></div>
+</div>`,
+
+m44:`<div class="obj-card">
+  <div class="obj-head">
+    <div><div class="obj-name">M44 — Beehive Cluster</div><div class="obj-type">Open cluster · Cancer · mag 3.7 · 577 ly</div></div>
+    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px;justify-content:flex-end">${E(5)}</div></div>
+  </div>
+  <div class="obj-meta">
+    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 4–28</div></div>
+    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">9pm–1am</div></div>
+    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">South-SW, high</div></div>
+  </div>
+  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
+    <div class="obj-meta-item"><div class="mk">Use only</div><div class="mv">25mm (36×)</div></div>
+    <div class="obj-meta-item"><div class="mk">Moon caution</div><div class="mv">Survives most phases</div></div>
+    <div class="obj-meta-item"><div class="mk">Skip</div><div class="mv">Apr 1–3 (full moon)</div></div>
+  </div>
+  <div class="obj-body">
+    <div class="obj-desc"><h4>What you will see</h4><p>A spectacular loose swarm of stars filling the whole eyepiece field. M44 spans ~1.6° — slightly wider than your 1.4° FOV — so it slightly overflows the 25mm view, giving you the impression of stars extending beyond the edge. Don't switch to the 9mm — the cluster is far too large. Look for the subtle warm yellowish tinge of the K-type giant stars. Naked-eye visible as a fuzzy patch on a clear night. One of the most satisfying clusters for a small telescope.</p></div>
+    <div class="obj-sketch-col">${SK.m44}<div class="sketch-lbl">25mm · 36×<br>loose star swarm</div></div>
+  </div>
+  <div class="obj-finder"><h4>How to find it</h4><p>Find the bright pair Castor and Pollux in Gemini (high SW). Move your gaze about two fist-widths east — you'll see a fuzzy naked-eye patch on a clear night. That's M44. Centre it in the 25mm eyepiece and enjoy.</p></div>
+</div>`,
+
+m3:`<div class="obj-card">
+  <div class="obj-head">
+    <div><div class="obj-name">M3 — Globular Cluster</div><div class="obj-type">Globular cluster · Canes Venatici · mag 6.2 · 34,000 ly</div></div>
+    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px;justify-content:flex-end">${E(4)}</div></div>
+  </div>
+  <div class="obj-meta">
+    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 10–27</div></div>
+    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">11pm–2am</div></div>
+    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">East, rising high</div></div>
+  </div>
+  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
+    <div class="obj-meta-item"><div class="mk">Start with</div><div class="mv">25mm (36×)</div></div>
+    <div class="obj-meta-item"><div class="mk">Then try</div><div class="mv">9mm (100×)</div></div>
+    <div class="obj-meta-item"><div class="mk">Needs</div><div class="mv">Dark skies</div></div>
+  </div>
+  <div class="obj-body">
+    <div class="obj-desc"><h4>What you will see</h4><p>At 36× an obvious round cotton-ball glow with a concentrated core — unmistakable. At 100× the halo takes on a slightly granular, salt-and-pepper texture at the edges: tantalising hints of individual stars, but not cleanly resolved pinpoints. A 114mm aperture cannot fully resolve M3's stars — that requires 150mm or more — but the granular texture is real and rewarding. Use averted vision to draw it out. One of the finest globulars in the northern sky.</p></div>
+    <div class="obj-sketch-col">${SK.m3}<div class="sketch-lbl">9mm · 100×<br>granular halo, bright core</div></div>
+  </div>
+  <div class="obj-finder"><h4>How to find it</h4><p>Find bright orange Arcturus high in the east by midnight. Move ~6° northwest (one binocular field) toward Cor Caroli in Canes Venatici, then nudge slightly south. M3 appears as a fuzzy "star" that refuses to sharpen with focus — that's your sign.</p></div>
+</div>`,
+
+algieba:`<div class="obj-card">
+  <div class="obj-head">
+    <div><div class="obj-name">Algieba — γ Leonis</div><div class="obj-type">Binary star · Leo · combined mag 2.0 · 126 ly · separation ~4.6″</div></div>
+    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px;justify-content:flex-end">${E(4)}</div></div>
+  </div>
+  <div class="obj-meta">
+    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 4–27</div></div>
+    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">9pm–1am</div></div>
+    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">South, high in Leo</div></div>
+  </div>
+  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
+    <div class="obj-meta-item"><div class="mk">Use</div><div class="mv">9mm (100×)</div></div>
+    <div class="obj-meta-item"><div class="mk">Needs</div><div class="mv">Steady seeing</div></div>
+    <div class="obj-meta-item"><div class="mk">Moon caution</div><div class="mv">Any phase fine</div></div>
+  </div>
+  <div class="obj-body">
+    <div class="obj-desc"><h4>What you will see</h4><p>At 100× two warm golden-orange stars side by side, cleanly separated — one of the most beautiful colour-matched pairs in the sky. The primary (mag 2.3) and secondary (mag 3.6) are both giant stars, giving them nearly identical warm hues. The pair is ~4.6 arcseconds apart — comfortably within reach of 114mm on a steady night. A premier showpiece: bright, unambiguous, and deeply satisfying. If the air is unsteady the pair blurs into one — check again on a calmer night.</p></div>
+    <div class="obj-sketch-col">${SK.algieba}<div class="sketch-lbl">9mm · 100×<br>golden pair, cleanly split</div></div>
+  </div>
+  <div class="obj-finder"><h4>How to find it</h4><p>Find the Sickle of Leo — the backward question-mark with Regulus at the base. Algieba is the bright star near the top of the curve, third brightest in Leo overall. It's easily naked-eye. Point the 9mm at it — you can't miss the star, but you need steady air to split it cleanly.</p></div>
+</div>`,
+
+leo:`<div class="obj-card">
+  <div class="obj-head">
+    <div><div class="obj-name">Leo Triplet — M65, M66, NGC 3628</div><div class="obj-type">Galaxy group · Leo · mag 9.3–10.2 · 35 million ly</div></div>
+    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px;justify-content:flex-end">${E(2)}</div></div>
+  </div>
+  <div class="obj-meta">
+    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 10–25</div></div>
+    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">10pm–1am</div></div>
+    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">Due south, high</div></div>
+  </div>
+  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
+    <div class="obj-meta-item"><div class="mk">Use</div><div class="mv">25mm (36×)</div></div>
+    <div class="obj-meta-item"><div class="mk">Needs</div><div class="mv">Excellent dark skies</div></div>
+    <div class="obj-meta-item"><div class="mk">Avoid</div><div class="mv">Any moonlight</div></div>
+  </div>
+  <div class="obj-body">
+    <div class="obj-desc"><h4>What you will see</h4><p>A genuinely challenging target for 114mm. On a truly dark night (Bortle 4 or better), M65 and M66 appear as faint elongated oval smudges with slightly brighter cores — subtle but real, and both fit the 36× field. NGC 3628 (the "Hamburger galaxy") is significantly fainter still — a thin, low-contrast edge-on streak that requires averted vision and excellent transparency. It will be invisible from suburban or light-polluted skies entirely. Reserve this for the new moon window Apr 17–20.</p></div>
+    <div class="obj-sketch-col">${SK.leo}<div class="sketch-lbl">25mm · 36×<br>faint ovals, dark skies only</div></div>
+  </div>
+  <div class="obj-finder"><h4>How to find it</h4><p>Find Theta Leonis (θ Leo) — the bottom-right star in Leo's body quadrilateral. M65 and M66 sit ~1.5° south (three moon-widths). Sweep slowly south at 36×. Once you see the two smudges, NGC 3628 is ~0.6° further north — use averted vision and patience.</p></div>
+</div>`,
+
+m51:`<div class="obj-card">
+  <div class="obj-head">
+    <div><div class="obj-name">M51 — Whirlpool Galaxy</div><div class="obj-type">Spiral galaxy + NGC 5195 · Canes Venatici · mag 8.4 · 23 million ly</div></div>
+    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px;justify-content:flex-end">${E(3)}</div></div>
+  </div>
+  <div class="obj-meta">
+    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 10–27</div></div>
+    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">11pm–2am</div></div>
+    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">North, high overhead</div></div>
+  </div>
+  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
+    <div class="obj-meta-item"><div class="mk">Start with</div><div class="mv">25mm (36×)</div></div>
+    <div class="obj-meta-item"><div class="mk">Then try</div><div class="mv">9mm (100×)</div></div>
+    <div class="obj-meta-item"><div class="mk">Needs</div><div class="mv">Excellent dark skies</div></div>
+  </div>
+  <div class="obj-body">
+    <div class="obj-desc"><h4>What you will see</h4><p>At 36× two fuzzy glows sitting close together — M51 and its companion NGC 5195. The companion is noticeably smaller and offset. At 100× M51's core brightens and sharpens; both nuclei are distinct. The faint bridge connecting them may be hinted at with averted vision on the very best nights. Note: the famous spiral arms are not visible at 114mm — that requires 150–200mm aperture. What you see is a round, uneven glow, not arms. Still the showpiece of the month.</p></div>
+    <div class="obj-sketch-col">${SK.m51}<div class="sketch-lbl">9mm · 100×<br>two nuclei, hint of bridge</div></div>
+  </div>
+  <div class="obj-finder"><h4>How to find it</h4><p>Find Alkaid — the end star of the Big Dipper's handle. M51 sits ~3.5° southwest (about 7 moon-widths). At 36× sweep slowly — the double glow is the giveaway.</p></div>
+</div>`,
+
+conditions:`<h2 class="stitle">Conditions &amp; observer's log</h2>
+<div class="cond-grid">
+  <div class="cond-box"><h4>Transparency vs seeing</h4><p>Transparency = how clear the air is (affects faint objects like galaxies). Seeing = how steady the air is (affects fine detail and splitting double stars at 100×). For galaxies: prioritise transparency. For Algieba, planets, and the Moon: prioritise seeing.</p></div>
+  <div class="cond-box"><h4>Averted vision</h4><p>Look slightly to the side of a faint object to use the eye's rod cells (~10–15° off-centre). Essential for the Leo Triplet, M51, and the granular halo of M3. Also helps detect NGC 2438 in M46. Takes practice — becomes natural.</p></div>
+</div>
+<p style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;font-family:'Helvetica Neue',sans-serif;margin-bottom:9px;">Pre-session checklist</p>
+<ul class="checklist">
+  <li><span class="chk">○</span>Let telescope cool outside 30–45 min — a warm mirror creates thermal currents that blur the image significantly</li>
+  <li><span class="chk">○</span>Allow 20 min for eyes to dark-adapt — red torch only, avoid all white light</li>
+  <li><span class="chk">○</span>Check Moon phase — plan deep sky sessions around Apr 10–27 new moon window</li>
+  <li><span class="chk">○</span>Start with 25mm (36×) to find every object, then switch to 9mm (100×) for detail</li>
+  <li><span class="chk">○</span>Clean eyepieces only if needed — lens cloth, breathe gently on glass first, never tissue</li>
+  <li><span class="chk">○</span>Note time, seeing (1–5) and transparency (1–5) — patterns across sessions reveal your best nights</li>
+</ul>
+<div class="log-grid">
+  <div class="log-box"><h4>Session log</h4>
+    <div class="log-line">Date: ___________________</div>
+    <div class="log-line">Time start: ______________</div>
+    <div class="log-line">Seeing (1–5): ____________</div>
+    <div class="log-line">Transparency (1–5): ______</div>
+    <div class="log-line">Objects observed: ________</div>
+    <div class="log-line">Notes: __________________</div>
+  </div>
+  <div class="log-box"><h4>Eyepiece sketches</h4>
+    <div class="sketch-pair">
+      <div class="sketch-mini"><svg width="56" height="56" viewBox="0 0 60 60"><circle cx="30" cy="30" r="27" fill="#0d0d1c"/><circle cx="30" cy="30" r="27" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1"/></svg><span>25mm · 36×</span></div>
+      <div class="sketch-mini"><svg width="56" height="56" viewBox="0 0 60 60"><circle cx="30" cy="30" r="27" fill="#0d0d1c"/><circle cx="30" cy="30" r="27" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1"/></svg><span>9mm · 100×</span></div>
+    </div>
+  </div>
+</div>`,
+
+glossary:`<h2 class="stitle">Quick glossary</h2>
+<div class="gloss-grid">
+  <div class="gloss-item"><div class="gloss-term">Magnitude (mag)</div><div class="gloss-def">Brightness scale — lower is brighter. Sun −26, naked eye limit ~6, your scope reaches ~12.</div></div>
+  <div class="gloss-item"><div class="gloss-term">FOV</div><div class="gloss-def">True FOV = AFOV ÷ magnification. At 36× with 52° AFOV: 52÷36 = 1.44°. The Moon is 0.5° wide.</div></div>
+  <div class="gloss-item"><div class="gloss-term">Averted vision</div><div class="gloss-def">Look slightly off-centre to use rod cells. Essential for faint galaxies and M3's halo texture.</div></div>
+  <div class="gloss-item"><div class="gloss-term">Seeing</div><div class="gloss-def">Atmospheric steadiness. Poor seeing blurs stars and prevents double star splits.</div></div>
+  <div class="gloss-item"><div class="gloss-term">Terminator</div><div class="gloss-def">Light/dark boundary on the Moon. The best place to see shadow-enhanced crater detail.</div></div>
+  <div class="gloss-item"><div class="gloss-term">Dark adaptation</div><div class="gloss-def">Eyes need ~20 min in full darkness for peak sensitivity. One white light flash resets it.</div></div>
+  <div class="gloss-item"><div class="gloss-term">Arcsecond (″)</div><div class="gloss-def">1/3600 of a degree. Algieba's 4.6″ gap is comfortably split at 100× on a steady night.</div></div>
+  <div class="gloss-item"><div class="gloss-term">Bortle scale</div><div class="gloss-def">1–9 sky darkness scale. Leo Triplet and NGC 3628 need Bortle 4 or better.</div></div>
+  <div class="gloss-item"><div class="gloss-term">Trapezium</div><div class="gloss-def">Four hot young stars at M42's core — a tiny trapezoid, clearly split at 100×.</div></div>
+  <div class="gloss-item"><div class="gloss-term">AFOV</div><div class="gloss-def">Apparent field of view of the eyepiece. Your 25mm has ~52°. Divide by magnification for true FOV.</div></div>
+</div>
+<div class="limit-box"><strong style="color:var(--text)">Your telescope's limits:</strong> 114mm aperture · limiting magnitude ~12 under dark skies · max useful magnification ~230× (100× practical ceiling most nights) · 265× more light than the naked eye · resolving power ~1 arcsecond on the best nights · cannot fully resolve globular clusters — only granular halo texture.</div>
+<div class="quote-box">"The universe is under no obligation to make sense to you." — Neil deGrasse Tyson</div>`
+};
+
+// ── BUILD DOM ─────────────────────────────────────────────────────────────────
+const topnav=document.getElementById('topnav');
+const subnav=document.getElementById('subnav');
+const container=document.getElementById('slides');
+const progress=document.getElementById('progress');
+const counter=document.getElementById('counter');
+let current=0,animating=false;
+
+SLIDES.forEach(s=>{
+  if(s.group==='objects')return;
+  const a=document.createElement('a');
+  a.textContent=s.label;
+  if(s.isGroup){
+    a.dataset.group='objects';
+    a.addEventListener('click',()=>{const fi=RENDERABLE.findIndex(r=>r.group==='objects');goTo(fi);});
+  }else{
+    const idx=RENDERABLE.findIndex(r=>r.id===s.id);
+    a.dataset.idx=idx;
+    a.addEventListener('click',()=>goTo(idx));
+  }
+  topnav.appendChild(a);
+});
+
+RENDERABLE.forEach((s,idx)=>{
+  if(s.group!=='objects')return;
+  const a=document.createElement('a');
+  a.textContent=s.label;
+  a.dataset.idx=idx;
+  a.addEventListener('click',()=>goTo(idx));
+  subnav.appendChild(a);
+});
+
+RENDERABLE.forEach((s,i)=>{
+  const div=document.createElement('div');
+  div.className='slide'+(i===0?' active':'');
+  div.id=s.id;
+  const inner=document.createElement('div');
+  inner.className='slide-inner';
+  inner.innerHTML=C[s.id]||`<h2 class="stitle">${s.label}</h2>`;
+  div.appendChild(inner);
+  container.appendChild(div);
+});
+
+function setTop(sub){container.style.top=sub?'66px':'38px';}
+
+function updateUI(idx){
+  const slide=RENDERABLE[idx];
+  const isObj=slide.group==='objects';
+  topnav.querySelectorAll('a').forEach(a=>{
+    if(a.dataset.group==='objects') a.classList.toggle('active',isObj);
+    else if(a.dataset.idx!==undefined) a.classList.toggle('active',+a.dataset.idx===idx);
+  });
+  subnav.classList.toggle('visible',isObj);
+  setTop(isObj);
+  const objSlides=RENDERABLE.filter(s=>s.group==='objects');
+  subnav.querySelectorAll('a').forEach((a,i)=>a.classList.toggle('active',objSlides[i]&&objSlides[i].id===slide.id));
+  if(isObj){const al=subnav.querySelector('a.active');if(al)al.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});}
+  const atl=topnav.querySelector('a.active');if(atl)atl.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  progress.style.width=(idx/(RENDERABLE.length-1)*100)+'%';
+  counter.textContent=(idx+1)+' / '+RENDERABLE.length;
+}
+
+function goTo(idx){
+  if(idx===current||animating||idx<0||idx>=RENDERABLE.length)return;
+  animating=true;
+  const all=container.querySelectorAll('.slide');
+  const from=all[current],to=all[idx];
+  const fwd=idx>current;
+  to.style.transition='none';
+  to.style.opacity='0';
+  to.style.transform=fwd?'translateY(40px)':'translateY(-40px)';
+  to.classList.add('active');
+  to.scrollTop=0;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    to.style.transition='';to.style.opacity='1';to.style.transform='translateY(0)';
+    from.style.opacity='0';from.style.transform=fwd?'translateY(-40px)':'translateY(40px)';
+    setTimeout(()=>{from.classList.remove('active');from.style.cssText='';animating=false;},450);
+  }));
+  current=idx;updateUI(idx);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();goTo(current+1);}
+  else if(e.key==='ArrowLeft'){e.preventDefault();goTo(current-1);}
+});
+
+let wAcc=0,wT=null;
+container.addEventListener('wheel',e=>{
+  const el=container.querySelectorAll('.slide')[current];
+  const atB=el.scrollTop+el.clientHeight>=el.scrollHeight-2;
+  const atT=el.scrollTop<=0;
+  if((e.deltaY>0&&atB)||(e.deltaY<0&&atT)){
+    e.preventDefault();wAcc+=e.deltaY;clearTimeout(wT);
+    wT=setTimeout(()=>{if(Math.abs(wAcc)>20)goTo(wAcc>0?current+1:current-1);wAcc=0;},80);
+  }
+},{passive:false});
+
+let tY=0;
+container.addEventListener('touchstart',e=>{tY=e.touches[0].clientY;},{passive:true});
+container.addEventListener('touchend',e=>{const dy=tY-e.changedTouches[0].clientY;if(Math.abs(dy)>44)goTo(dy>0?current+1:current-1);},{passive:true});
+
+setTop(false);updateUI(0);
+
+// ── SERVICE WORKER ────────────────────────────────────────────────────────────
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js')
+      .then(r=>console.log('SW registered',r.scope))
+      .catch(e=>console.log('SW failed',e));
+  });
+}
+</script>
+</body>
+</html>

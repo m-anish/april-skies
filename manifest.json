@@ -1,0 +1,16 @@
+{
+  "name": "April Skies — Night Sky Guide 2026",
+  "short_name": "April Skies",
+  "description": "Interactive night sky guide for April 2026 — 114mm reflector telescope",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#09090f",
+  "theme_color": "#09090f",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["education", "lifestyle"],
+  "screenshots": []
+}
