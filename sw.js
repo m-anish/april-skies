@@ -1,4 +1,4 @@
-const CACHE = 'april-skies-v1';
+const CACHE = 'april-skies-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -23,6 +23,19 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => caches.match('./index.html')))
+    caches.match(e.request).then(cached => {
+      const fetchPromise = fetch(e.request).then(networkResponse => {
+        caches.open(CACHE).then(cache => {
+          cache.put(e.request, networkResponse.clone());
+        });
+        return networkResponse;
+      }).catch(() => {
+        // Fallback for offline if not in cache (e.g., initial load failure)
+        return caches.match('./index.html');
+      });
+
+      // Serve from cache immediately if available, but fetch in background to update
+      return cached || fetchPromise;
+    })
   );
 });
