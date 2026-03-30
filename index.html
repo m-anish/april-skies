@@ -4,13 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#09090f">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="April 2026 Skies">
+<meta name="apple-mobile-web-app-title" content="Night Sky Guide"><!-- patched by app.js -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>April 2026 Skies — Night Sky Guide</title>
+<title>Night Sky Guide</title><!-- patched by app.js -->
 <style>
+/* ── TOKENS ─────────────────────────────────────────────────────────────── */
 :root {
   --bg:#09090f; --card:#141428; --border:rgba(255,255,255,0.08);
   --border2:rgba(255,255,255,0.16); --text:#e8e8f0; --muted:#9090b0;
@@ -19,7 +21,7 @@
   --nav-h:46px; --sub-h:34px;
   --sans:'Helvetica Neue',Arial,sans-serif;
 }
-/* ── NIGHT / RED-SKY MODE ── */
+/* ── RED-SHIFT MODE ──────────────────────────────────────────────────────── */
 body.red-sky {
   --bg:#100400; --card:#1c0800; --border:rgba(200,60,20,0.14);
   --border2:rgba(200,60,20,0.26); --text:#ffaa88; --muted:#cc6644;
@@ -27,19 +29,16 @@ body.red-sky {
   --purple:#993322; --warn:#ff6600;
 }
 body.red-sky #stars-canvas{opacity:0.35;}
-body.red-sky #topnav,body.red-sky #subnav{
-  background:rgba(16,4,0,0.97);
-}
+body.red-sky #topnav,body.red-sky #subnav{background:rgba(16,4,0,0.97);}
+
+/* ── RESET ───────────────────────────────────────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{background:var(--bg);color:var(--text);font-family:Georgia,'Times New Roman',serif;height:100%;overflow:hidden;}
 
-/* ── STAR CANVAS ── */
-#stars-canvas{
-  position:fixed;inset:0;z-index:0;
-  pointer-events:none;
-}
+/* ── STAR CANVAS ─────────────────────────────────────────────────────────── */
+#stars-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
 
-/* ── TOP NAV ── */
+/* ── TOP NAV ─────────────────────────────────────────────────────────────── */
 #topnav{
   position:fixed;top:0;left:0;right:0;height:var(--nav-h);
   background:rgba(9,9,15,0.96);backdrop-filter:blur(14px);
@@ -49,16 +48,15 @@ html,body{background:var(--bg);color:var(--text);font-family:Georgia,'Times New 
 }
 #topnav::-webkit-scrollbar{display:none;}
 #topnav a{
-  font-family:var(--sans);font-size:12.6px;
-  color:var(--dim);text-decoration:none;padding:5px 11px;
-  border-radius:6px;border:1px solid transparent;
+  font-family:var(--sans);font-size:12.6px;color:var(--dim);text-decoration:none;
+  padding:5px 11px;border-radius:6px;border:1px solid transparent;
   transition:color .15s,border-color .15s,background .15s;
   letter-spacing:.03em;white-space:nowrap;cursor:pointer;flex-shrink:0;
 }
 #topnav a:hover{color:var(--muted);}
 #topnav a.active{color:var(--gold);border-color:var(--gold2);background:rgba(240,192,64,0.07);}
 
-/* ── SUBNAV ── */
+/* ── SUB-NAV ─────────────────────────────────────────────────────────────── */
 #subnav{
   position:fixed;top:var(--nav-h);left:0;right:0;height:var(--sub-h);
   background:rgba(9,9,15,0.95);backdrop-filter:blur(10px);
@@ -69,200 +67,100 @@ html,body{background:var(--bg);color:var(--text);font-family:Georgia,'Times New 
 #subnav::-webkit-scrollbar{display:none;}
 #subnav.visible{display:flex;}
 #subnav a{
-  font-family:var(--sans);font-size:11.4px;
-  color:var(--dim);text-decoration:none;padding:4px 9px;
-  border-radius:4px;border:1px solid transparent;
+  font-family:var(--sans);font-size:11.4px;color:var(--dim);text-decoration:none;
+  padding:4px 9px;border-radius:4px;border:1px solid transparent;
   transition:color .15s,border-color .15s,background .15s;
   letter-spacing:.03em;white-space:nowrap;cursor:pointer;flex-shrink:0;
 }
 #subnav a:hover{color:var(--muted);}
 #subnav a.active{color:var(--teal);border-color:rgba(64,192,160,0.4);background:rgba(64,192,160,0.07);}
 
-/* ── SLIDE TRACK — horizontal ── */
+/* ── SLIDE TRACK ─────────────────────────────────────────────────────────── */
 #slide-track{
   position:fixed;top:var(--nav-h);left:0;bottom:0;
-  /* width set by JS = RENDERABLE.length × 100vw */
-  display:flex;
-  transition:transform .42s cubic-bezier(.4,0,.2,1);
-  z-index:1;
-  will-change:transform;
+  display:flex;transition:transform .42s cubic-bezier(.4,0,.2,1);
+  z-index:1;will-change:transform;
 }
 #slide-track.with-sub{top:calc(var(--nav-h) + var(--sub-h));}
-
 .slide{
   flex:0 0 100vw;width:100vw;height:100%;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:24px 20px 72px;
   display:flex;flex-direction:column;align-items:center;
 }
-.slide-inner{width:100%;max-width:min(960px, calc(100vw - 120px));}
+.slide-inner{width:100%;max-width:min(960px,calc(100vw - 120px));}
 
-/* ── SWIPE HINT DOTS ── */
-#swipe-dots{
-  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
-  display:flex;gap:5px;z-index:200;
-}
-.sdot{
-  width:5px;height:5px;border-radius:50%;
-  background:var(--dim);transition:background .25s,transform .25s;
-  flex-shrink:0;
-}
+/* ── DOT INDICATORS ──────────────────────────────────────────────────────── */
+#swipe-dots{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:200;}
+.sdot{width:5px;height:5px;border-radius:50%;background:var(--dim);transition:background .25s,transform .25s;flex-shrink:0;}
 .sdot.active{background:var(--gold);transform:scale(1.35);}
 
-/* ── FLOATING REDSHIFT BUBBLE ── */
-#nightmode-bubble {
-  position:fixed;
-  bottom:48px; right:16px;
-  z-index:500;
-  width:54px; height:54px;
-  border-radius:50%;
-  /* Default: clearly visible warm white ring */
-  background:rgba(30,28,50,0.92);
-  backdrop-filter:blur(14px);
+/* ── REDSHIFT BUBBLE ─────────────────────────────────────────────────────── */
+#nightmode-bubble{
+  position:fixed;bottom:48px;right:16px;z-index:500;
+  width:54px;height:54px;border-radius:50%;
+  background:rgba(30,28,50,0.92);backdrop-filter:blur(14px);
   border:2px solid rgba(200,190,255,0.45);
-  box-shadow:0 2px 20px rgba(0,0,0,0.6), 0 0 0 0 transparent;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;
-  transition:background .35s, border-color .35s, box-shadow .35s, transform .15s;
-  -webkit-tap-highlight-color:transparent;
-  user-select:none;
+  box-shadow:0 2px 20px rgba(0,0,0,0.6);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background .35s,border-color .35s,box-shadow .35s,transform .15s;
+  -webkit-tap-highlight-color:transparent;user-select:none;
 }
-#nightmode-bubble:hover  { transform:scale(1.1);  border-color:rgba(220,210,255,0.75); }
-#nightmode-bubble:active { transform:scale(0.92); }
+#nightmode-bubble:hover{transform:scale(1.1);border-color:rgba(220,210,255,0.75);}
+#nightmode-bubble:active{transform:scale(0.92);}
+#nightmode-bubble .nb-icon{font-size:24px;line-height:1;display:block;transition:transform .4s cubic-bezier(.34,1.56,.64,1),filter .35s;filter:none;color:#fff8e0;margin-top:2px;}
+body.red-sky #nightmode-bubble{background:rgba(60,8,0,0.94);border-color:rgba(255,80,30,0.65);box-shadow:0 0 22px rgba(255,50,10,0.5),0 2px 8px rgba(0,0,0,0.55);}
+body.red-sky #nightmode-bubble:hover{border-color:rgba(255,100,50,0.88);}
+body.red-sky #nightmode-bubble .nb-icon{transform:scale(1.05) translateY(1px);filter:sepia(1) saturate(3) hue-rotate(-10deg) brightness(1.2);}
+#nightmode-bubble::after{
+  content:'Red-shift mode';position:absolute;right:calc(100% + 10px);top:50%;transform:translateY(-50%);
+  background:rgba(9,9,15,0.95);border:1px solid rgba(200,190,255,0.35);border-radius:6px;
+  padding:5px 11px;font-family:var(--sans);font-size:11px;color:rgba(200,190,255,0.8);
+  letter-spacing:.04em;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;
+}
+#nightmode-bubble:hover::after{opacity:1;}
+body.red-sky #nightmode-bubble::after{content:'Red-shift ON';color:rgba(255,120,80,0.9);border-color:rgba(255,80,30,0.4);}
 
-/* The icon — two-state SVG-like approach using text */
-#nightmode-bubble .nb-icon {
-  font-size:24px;
-  line-height:1;
-  display:block;
-  transition:transform .4s cubic-bezier(.34,1.56,.64,1), filter .35s;
-  /* default: white/cool star = normal sky mode */
-  filter:none;
-  color:#fff8e0;
-  margin-top:2px;
-}
-
-/* Red-sky ON state */
-body.red-sky #nightmode-bubble {
-  background:rgba(60,8,0,0.94);
-  border-color:rgba(255,80,30,0.65);
-  box-shadow:0 0 22px rgba(255,50,10,0.5), 0 2px 8px rgba(0,0,0,0.55);
-}
-body.red-sky #nightmode-bubble:hover {
-  border-color:rgba(255,100,50,0.88);
-}
-body.red-sky #nightmode-bubble .nb-icon {
-  transform:scale(1.05) translateY(1px);
-  filter:sepia(1) saturate(3) hue-rotate(-10deg) brightness(1.2);
-}
-
-/* Tooltip */
-#nightmode-bubble::after {
-  content:'Red-shift mode';
-  position:absolute;
-  right:calc(100% + 10px);
-  top:50%;transform:translateY(-50%);
-  background:rgba(9,9,15,0.95);
-  border:1px solid rgba(200,190,255,0.35);
-  border-radius:6px;
-  padding:5px 11px;
-  font-family:var(--sans);font-size:11px;
-  color:rgba(200,190,255,0.8);letter-spacing:.04em;
-  white-space:nowrap;
-  opacity:0;pointer-events:none;
-  transition:opacity .2s;
-}
-#nightmode-bubble:hover::after { opacity:1; }
-body.red-sky #nightmode-bubble::after {
-  content:'Red-shift ON';
-  color:rgba(255,120,80,0.9);
-  border-color:rgba(255,80,30,0.4);
-}
+/* ── ARROW BUTTONS ───────────────────────────────────────────────────────── */
 #hint-prev,#hint-next{
-  position:fixed;top:50%;transform:translateY(-50%);
-  z-index:200;
-  background:rgba(240,192,64,0.11);
-  backdrop-filter:blur(10px);
-  border:1.5px solid rgba(240,192,64,0.38);
-  border-radius:50%;
-  width:46px;height:46px;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;
-  color:rgba(240,192,64,0.8);
-  font-size:22px;
+  position:fixed;top:50%;transform:translateY(-50%);z-index:200;
+  background:rgba(240,192,64,0.11);backdrop-filter:blur(10px);
+  border:1.5px solid rgba(240,192,64,0.38);border-radius:50%;
+  width:46px;height:46px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:rgba(240,192,64,0.8);font-size:22px;
   transition:color .15s,background .2s,border-color .2s,opacity .3s,transform .15s;
 }
 #hint-prev{left:12px;}#hint-next{right:12px;}
-#hint-prev:hover,#hint-next:hover{
-  color:#fff;
-  background:rgba(240,192,64,0.22);
-  border-color:rgba(240,192,64,0.72);
-  transform:translateY(-50%) scale(1.1);
-}
+#hint-prev:hover,#hint-next:hover{color:#fff;background:rgba(240,192,64,0.22);border-color:rgba(240,192,64,0.72);transform:translateY(-50%) scale(1.1);}
 #hint-prev.gone,#hint-next.gone{opacity:0;pointer-events:none;}
 @media(max-width:600px){#hint-prev,#hint-next{display:none;}}
-@media(min-width:900px){.mobile-only{display:none !important;}}
 
-/* ── PROGRESS ── */
-#progress{
-  position:fixed;bottom:0;left:0;height:2px;
-  background:var(--gold);transition:width .35s ease;
-  z-index:400;opacity:.55;
-}
-#counter{
-  position:fixed;bottom:10px;right:14px;
-  font-family:var(--sans);font-size:10px;
-  color:var(--dim);letter-spacing:.08em;z-index:400;
-}
+/* ── PROGRESS ────────────────────────────────────────────────────────────── */
+#progress{position:fixed;bottom:0;left:0;height:2px;background:var(--gold);transition:width .35s ease;z-index:400;opacity:.55;}
+#counter{position:fixed;bottom:10px;right:14px;font-family:var(--sans);font-size:10px;color:var(--dim);letter-spacing:.08em;z-index:400;}
 
-/* ── COVER ── */
-.cover-wrap{
-  text-align:center;padding:28px 20px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  height:100%;           /* fills the slide exactly — no overflow, no scrollbar */
-  overflow:hidden;
-}
+/* ── COVER ───────────────────────────────────────────────────────────────── */
+.cover-wrap{text-align:center;padding:28px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;overflow:hidden;}
 .cover-dots{display:flex;gap:6px;justify-content:center;margin-bottom:22px;}
 .cover-dot{width:5px;height:5px;border-radius:50%;background:var(--dim);}
 .cover-dot.lit{background:var(--gold);}
-.cover-year{
-  font-family:var(--sans);font-size:12px;font-weight:700;
-  color:var(--gold);letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px;
-}
+.cover-year{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px;}
 .cover-title{font-size:clamp(46px,10vw,82px);font-weight:400;letter-spacing:-.025em;color:#fff;line-height:1;margin-bottom:6px;}
 .cover-italic{font-style:italic;color:var(--gold);}
 .cover-sub{font-size:12px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-family:var(--sans);margin:14px 0 24px;}
 .spec-row{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:26px;}
 .pill{font-family:var(--sans);font-size:11px;padding:4px 12px;border:1px solid var(--border2);border-radius:20px;color:var(--muted);letter-spacing:.04em;}
 .pill.hi{border-color:var(--gold2);color:var(--gold);}
+.cover-swipe-hint{display:flex;align-items:center;gap:10px;font-family:var(--sans);font-size:12px;color:var(--dim);margin-top:4px;}
+.cover-swipe-hint kbd{display:inline-block;padding:2px 7px;border:1px solid var(--border2);border-radius:4px;font-size:10px;color:var(--muted);font-family:var(--sans);background:rgba(255,255,255,0.04);}
+.swipe-arrow-anim{font-size:20px;color:var(--gold);animation:swipe-hint 2s ease-in-out infinite;display:inline-block;}
+@keyframes swipe-hint{0%,100%{transform:translateX(0);opacity:.7;}50%{transform:translateX(6px);opacity:1;}}
 
-/* swipe hint on cover */
-.cover-swipe-hint{
-  display:flex;align-items:center;gap:10px;
-  font-family:var(--sans);font-size:12px;color:var(--dim);
-  margin-top:4px;
-}
-.cover-swipe-hint kbd{
-  display:inline-block;padding:2px 7px;
-  border:1px solid var(--border2);border-radius:4px;
-  font-size:10px;color:var(--muted);font-family:var(--sans);
-  background:rgba(255,255,255,0.04);
-}
-.swipe-arrow-anim{
-  font-size:20px;color:var(--gold);
-  animation:swipe-hint 2s ease-in-out infinite;
-  display:inline-block;
-}
-@keyframes swipe-hint{
-  0%,100%{transform:translateX(0);opacity:.7;}
-  50%{transform:translateX(6px);opacity:1;}
-}
-
-/* ── TYPOGRAPHY ── */
+/* ── TYPOGRAPHY ──────────────────────────────────────────────────────────── */
 h2.stitle{font-size:clamp(19px,4vw,27px);font-weight:400;color:#fff;margin-bottom:4px;}
 .sintro{font-size:12px;color:var(--muted);font-family:var(--sans);margin-bottom:15px;letter-spacing:.03em;}
 
-/* ── PLANNER ── */
+/* ── PLANNER ─────────────────────────────────────────────────────────────── */
 .planner-wrap{overflow-x:auto;}
 table.planner{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12px;}
 table.planner th{text-align:left;padding:7px 9px;color:var(--dim);font-weight:400;letter-spacing:.08em;text-transform:uppercase;font-size:10px;border-bottom:1px solid var(--border2);}
@@ -273,8 +171,6 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
 .er{display:flex;gap:2px;align-items:center;}
 .sf{width:10px;height:10px;background:var(--gold);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);flex-shrink:0;}
 .se{width:10px;height:10px;background:#2a2a4a;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);flex-shrink:0;}
-
-/* Mobile planner cards */
 .plan-cards{display:none;gap:10px;flex-direction:column;}
 .pweek{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 15px;}
 .pweek.bw{border-color:rgba(64,192,160,0.35);background:rgba(64,192,160,0.04);}
@@ -283,16 +179,10 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
 .pw-tg{font-size:14px;color:var(--text);margin-bottom:4px;line-height:1.5;}
 .pw-time{font-family:var(--sans);font-size:12px;color:var(--muted);margin-bottom:3px;}
 .pw-note{font-family:var(--sans);font-size:12px;line-height:1.5;}
-.pw-time{font-family:var(--sans);font-size:12px;color:var(--muted);margin-bottom:3px;}
-@media(max-width:600px){
-  .planner-wrap table.planner{display:none;}
-  .plan-cards{display:flex;}
-  .pw-time{display:none;}  /* time merged into note on mobile */
-}
+@media(max-width:600px){.planner-wrap table.planner{display:none;}.plan-cards{display:flex;}.pw-time{display:none;}}
 
-/* ── MOON ── */
+/* ── MOON ────────────────────────────────────────────────────────────────── */
 .phase-wrap{margin-bottom:12px;}
-.phase-card{padding-bottom:5px;}
 .phase-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:10px 0 12px;}
 .phase-day{text-align:center;min-width:21px;}
 .phase-day .dn{font-size:8px;color:var(--dim);font-family:var(--sans);display:block;margin-bottom:1px;}
@@ -304,7 +194,7 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
 .feat-card p{font-size:12px;color:var(--muted);line-height:1.6;}
 .feat-card .best{font-size:11px;color:var(--teal);margin-top:5px;font-family:var(--sans);}
 
-/* ── PLANETS ── */
+/* ── PLANETS ─────────────────────────────────────────────────────────────── */
 .planet-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:12px;}
 .pcard{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;}
 .pcard h3{font-size:18px;font-weight:400;color:#fff;margin-bottom:9px;}
@@ -320,7 +210,7 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
 .bonus.wb{border-left-color:var(--warn);}
 .bonus.wb h4{color:#c08060;}
 
-/* ── OBJECT CARDS ── */
+/* ── OBJECT CARDS ────────────────────────────────────────────────────────── */
 .obj-card{background:var(--card);border:1px solid var(--border2);border-radius:12px;overflow:hidden;}
 .obj-head{padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;}
 .obj-name{font-size:18px;font-weight:400;color:#fff;}
@@ -347,7 +237,7 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
 .obj-finder p{font-size:12px;color:var(--muted);line-height:1.6;}
 .obj-note{padding:7px 14px;border-top:1px solid var(--border);font-size:11px;color:#c08060;font-family:var(--sans);line-height:1.5;background:rgba(224,112,48,0.06);}
 
-/* ── CONDITIONS ── */
+/* ── CONDITIONS ──────────────────────────────────────────────────────────── */
 .cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:16px;}
 .cond-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px;}
 .cond-box h4{font-size:12px;color:var(--gold);font-family:var(--sans);font-weight:400;margin-bottom:5px;}
@@ -364,7 +254,7 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
 .sketch-mini{text-align:center;}
 .sketch-mini span{font-size:9px;color:var(--dim);font-family:var(--sans);display:block;margin-top:4px;}
 
-/* ── GLOSSARY ── */
+/* ── GLOSSARY ────────────────────────────────────────────────────────────── */
 .gloss-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
 .gloss-item{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:9px 11px;}
 .gloss-term{font-size:12px;color:var(--gold);font-family:var(--sans);margin-bottom:3px;}
@@ -372,36 +262,21 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
 .limit-box{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--purple);border-radius:0 8px 8px 0;padding:11px 13px;font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:18px;}
 .quote-box{text-align:center;padding:18px;font-style:italic;color:var(--dim);font-size:13px;border-top:1px solid var(--border);}
 
-/* ── CREDITS ── */
-.credits-wrap{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  height:100%;
-  overflow:hidden;
-  text-align:center;padding:40px 20px;
-}
+/* ── CREDITS ─────────────────────────────────────────────────────────────── */
+.credits-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;overflow:hidden;text-align:center;padding:40px 20px;}
 .credits-star{font-size:28px;color:var(--gold);margin-bottom:28px;animation:spin-slow 20s linear infinite;}
 @keyframes spin-slow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .credits-title{font-size:11px;font-family:var(--sans);font-weight:700;color:var(--dim);letter-spacing:.16em;text-transform:uppercase;margin-bottom:28px;}
 .credits-block{margin-bottom:24px;}
 .credits-role{font-family:var(--sans);font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
-/* ALL names — same size, same weight, same colour */
-.credits-name,
-.credits-name-sm{font-size:clamp(18px,3.5vw,26px);font-weight:400;color:#fff;margin-bottom:4px;}
-.credits-scope{
-  margin-top:28px;
-  font-family:var(--sans);font-size:11px;color:var(--dim);line-height:1.8;
-}
+.credits-name,.credits-name-sm{font-size:clamp(18px,3.5vw,26px);font-weight:400;color:#fff;margin-bottom:4px;}
+.credits-scope{margin-top:28px;font-family:var(--sans);font-size:11px;color:var(--dim);line-height:1.8;}
 .credits-scope strong{color:var(--muted);}
-.credits-quote{
-  margin-top:28px;font-style:italic;color:var(--dim);font-size:13px;
-  border-top:1px solid var(--border);padding-top:18px;
-  max-width:420px;
-}
+.credits-quote{margin-top:28px;font-style:italic;color:var(--dim);font-size:13px;border-top:1px solid var(--border);padding-top:18px;max-width:420px;}
 
-/* ── RESPONSIVE ── */
+/* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
 @media(max-width:520px){
-  #topnav{justify-content:flex-start;}
-  #subnav{justify-content:flex-start;}
+  #topnav,#subnav{justify-content:flex-start;}
   .planet-grid,.two-col,.cond-grid,.log-grid,.gloss-grid{grid-template-columns:1fr;}
   .obj-body{grid-template-columns:1fr;}
   .obj-body .obj-sketch-col{border-left:none;border-top:1px solid var(--border);}
@@ -410,8 +285,6 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
   .two-sketch-cell:last-child{border-bottom:none;}
   .obj-meta{grid-template-columns:1fr 1fr;}
 }
-
-/* ── Desktop scale-up: bigger text and cards on wide screens ── */
 @media(min-width:900px){
   #topnav a{font-size:15px;}
   #subnav a{font-size:14px;}
@@ -457,615 +330,25 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
   .cover-sub{font-size:17px;}
   .pill{font-size:16px;padding:5px 15px;}
   .cover-swipe-hint{font-size:17px;}
-  .sfeat-card h4{font-size:19px;}
   .two-sketch-cell .sketch-lbl{font-size:14px;}
 }
 </style>
 </head>
 <body>
-
-<!-- Starfield canvas — behind everything -->
 <canvas id="stars-canvas"></canvas>
-
 <nav id="topnav"></nav>
 <div id="subnav"></div>
 <button id="hint-prev" aria-label="Previous slide">&#8592;</button>
 <button id="hint-next" aria-label="Next slide">&#8594;</button>
-
-<!-- Floating red-shift bubble — always visible, always reachable -->
-<button id="nightmode-bubble" aria-label="Toggle red-shift mode">
-  <span class="nb-icon">&#x2600;&#xFE0E;</span>
-</button>
-
-<!-- Horizontal slide track -->
+<button id="nightmode-bubble" aria-label="Toggle red-shift mode"><span class="nb-icon">&#x2600;&#xFE0E;</span></button>
 <div id="slide-track"></div>
-
-<!-- Bottom indicators -->
 <div id="swipe-dots"></div>
 <div id="progress"></div>
 <div id="counter"></div>
 
-<script>
-// ── STARFIELD ──────────────────────────────────────────────────────────────────
-(function(){
-  const canvas = document.getElementById('stars-canvas');
-  const ctx = canvas.getContext('2d');
-
-  // Each star: x, y (0–1 normalised), radius, base opacity, flicker phase, flicker speed
-  const NUM = 180;
-  let stars = [];
-  let W, H;
-
-  function resize(){
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-
-  function initStars(){
-    stars = [];
-    const rng = mulberry32(0xdeadbeef);
-    for(let i=0;i<NUM;i++){
-      stars.push({
-        x: rng(),
-        y: rng(),
-        r: rng() * rng() * 1.8 + 0.3,     // most tiny, some slightly bigger
-        op: rng() * 0.5 + 0.15,            // base opacity 0.15–0.65
-        phase: rng() * Math.PI * 2,         // flicker phase offset
-        speed: rng() * 0.4 + 0.1,          // flicker speed (rad/s)
-        warm: rng() > 0.7,                  // warm-tinted star
-      });
-    }
-  }
-
-  // Deterministic RNG so stars don't jump on resize
-  function mulberry32(seed){
-    return function(){
-      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
-      let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
-      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-  }
-
-  let lastT = 0;
-  function draw(t){
-    const dt = Math.min((t - lastT) / 1000, 0.05);
-    lastT = t;
-    ctx.clearRect(0, 0, W, H);
-
-    for(const s of stars){
-      s.phase += s.speed * dt;
-      // flicker: sine wave ±25% of base opacity
-      const flicker = Math.sin(s.phase) * 0.25;
-      const op = Math.max(0, Math.min(1, s.op + flicker * s.op));
-      const col = s.warm ? `rgba(255,232,192,${op})` : `rgba(220,220,255,${op})`;
-      ctx.beginPath();
-      ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = col;
-      ctx.fill();
-    }
-    requestAnimationFrame(draw);
-  }
-
-  resize();
-  initStars();
-  window.addEventListener('resize', resize);
-  requestAnimationFrame(draw);
-})();
-
-// ── DATA ──────────────────────────────────────────────────────────────────────
-const SLIDES=[
-  {id:'cover',      label:'Cover',       group:null},
-  {id:'planner',    label:'Planner',     group:null},
-  {id:'moon',       label:'Moon',        group:null},
-  {id:'planets',    label:'Planets',     group:null},
-  {id:'objects',    label:'Objects',     group:null, isGroup:true},
-  {id:'m42',        label:'M42',         group:'objects'},
-  {id:'m4647',      label:'M46 / M47',   group:'objects'},
-  {id:'m44',        label:'M44',         group:'objects'},
-  {id:'m3',         label:'M3',          group:'objects'},
-  {id:'algieba',    label:'Algieba',     group:'objects'},
-  {id:'leo',        label:'Leo Triplet', group:'objects'},
-  {id:'m51',        label:'M51',         group:'objects'},
-  {id:'conditions', label:'Conditions',  group:null},
-  {id:'glossary',   label:'Glossary',    group:null},
-  {id:'credits',    label:'Credits',     group:null},
-];
-const RENDERABLE=SLIDES.filter(s=>!s.isGroup);
-const N=RENDERABLE.length;
-
-function E(n){return Array.from({length:5},(_,i)=>`<div class="${i<n?'sf':'se'}"></div>`).join('');}
-const PH=['🌕','🌕','🌖','🌖','🌖','🌖','🌗','🌗','🌗','🌗','🌘','🌘','🌘','🌘','🌑','🌑','🌑','🌒','🌒','🌒','🌓','🌓','🌓','🌓','🌔','🌔','🌔','🌔','🌔','🌕'];
-const phStrip=PH.map((p,i)=>`<div class="phase-day${i===16?' nm':''}"><span class="dn">${i+1}</span><span class="pm">${p}</span></div>`).join('');
-
-// ── SKETCHES ──────────────────────────────────────────────────────────────────
-const SK={
-m42:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_m42"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m42)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><ellipse cx="70" cy="72" rx="34" ry="28" fill="#3a3060" opacity=".45" transform="rotate(-15 70 72)"/><ellipse cx="62" cy="68" rx="24" ry="18" fill="#5040a0" opacity=".4" transform="rotate(-20 62 68)"/><ellipse cx="78" cy="76" rx="20" ry="14" fill="#4838a0" opacity=".35" transform="rotate(10 78 76)"/><ellipse cx="70" cy="70" rx="12" ry="10" fill="#7868c8" opacity=".55"/><ellipse cx="70" cy="70" rx="6" ry="5" fill="#c0b0f0" opacity=".7"/><circle cx="69" cy="69" r="1.4" fill="#fff" opacity=".98"/><circle cx="72" cy="68" r="1.2" fill="#fff" opacity=".92"/><circle cx="71" cy="72" r="1.1" fill="#fff" opacity=".88"/><circle cx="67" cy="71" r="1.0" fill="#fff" opacity=".85"/><circle cx="40" cy="38" r="1.8" fill="#ffe8c0" opacity=".9"/><circle cx="100" cy="45" r="1.4" fill="#fff" opacity=".7"/><circle cx="32" cy="80" r="1.2" fill="#fff" opacity=".6"/><circle cx="108" cy="90" r="1.0" fill="#fff" opacity=".55"/><circle cx="55" cy="110" r="1.2" fill="#fff" opacity=".5"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
-m47:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_m47"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m47)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="58" cy="58" r="2.6" fill="#ffe8c0" opacity=".95"/><circle cx="46" cy="50" r="2.0" fill="#fff" opacity=".88"/><circle cx="70" cy="46" r="1.8" fill="#ffe8c0" opacity=".85"/><circle cx="82" cy="54" r="1.6" fill="#fff" opacity=".8"/><circle cx="50" cy="68" r="2.2" fill="#fff" opacity=".85"/><circle cx="66" cy="74" r="2.0" fill="#ffe8c0" opacity=".85"/><circle cx="80" cy="66" r="1.8" fill="#fff" opacity=".78"/><circle cx="44" cy="78" r="1.4" fill="#fff" opacity=".7"/><circle cx="74" cy="84" r="1.6" fill="#fff" opacity=".72"/><circle cx="88" cy="72" r="1.4" fill="#fff" opacity=".68"/><circle cx="36" cy="62" r="1.2" fill="#fff" opacity=".6"/><circle cx="56" cy="88" r="1.2" fill="#fff" opacity=".58"/><circle cx="92" cy="52" r="1.0" fill="#fff" opacity=".52"/><circle cx="40" cy="90" r="1.0" fill="#fff" opacity=".48"/><circle cx="30" cy="46" r="0.9" fill="#fff" opacity=".4"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
-m46:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_m46"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m46)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="56" cy="50" r="1.0" fill="#fff" opacity=".72"/><circle cx="66" cy="44" r="0.9" fill="#fff" opacity=".68"/><circle cx="78" cy="48" r="1.1" fill="#fff" opacity=".74"/><circle cx="88" cy="56" r="1.0" fill="#fff" opacity=".7"/><circle cx="92" cy="68" r="0.9" fill="#fff" opacity=".66"/><circle cx="86" cy="80" r="1.0" fill="#fff" opacity=".7"/><circle cx="74" cy="88" r="0.9" fill="#fff" opacity=".65"/><circle cx="62" cy="86" r="1.1" fill="#fff" opacity=".7"/><circle cx="50" cy="78" r="1.0" fill="#fff" opacity=".68"/><circle cx="46" cy="66" r="0.9" fill="#fff" opacity=".64"/><circle cx="50" cy="56" r="0.9" fill="#fff" opacity=".65"/><circle cx="70" cy="56" r="0.9" fill="#fff" opacity=".65"/><circle cx="80" cy="62" r="1.0" fill="#fff" opacity=".67"/><circle cx="82" cy="74" r="0.9" fill="#fff" opacity=".63"/><circle cx="74" cy="80" r="0.9" fill="#fff" opacity=".64"/><circle cx="60" cy="78" r="1.0" fill="#fff" opacity=".66"/><circle cx="56" cy="66" r="0.9" fill="#fff" opacity=".63"/><circle cx="62" cy="60" r="0.9" fill="#fff" opacity=".64"/><circle cx="70" cy="64" r="0.8" fill="#fff" opacity=".6"/><circle cx="76" cy="70" r="0.8" fill="#fff" opacity=".6"/><circle cx="64" cy="70" r="0.8" fill="#fff" opacity=".58"/><circle cx="40" cy="72" r="0.8" fill="#fff" opacity=".5"/><circle cx="96" cy="78" r="0.8" fill="#fff" opacity=".48"/><circle cx="70" cy="40" r="0.7" fill="#fff" opacity=".4"/><circle cx="70" cy="46" r="7" fill="none" stroke="#7090c0" stroke-width="1.2" opacity=".6"/><circle cx="70" cy="46" r="3" fill="#90b0d8" opacity=".35"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
-m44:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_m44"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m44)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="44" cy="52" r="2.2" fill="#fff" opacity=".95"/><circle cx="60" cy="40" r="1.6" fill="#ffe8c0" opacity=".9"/><circle cx="78" cy="44" r="2.0" fill="#fff" opacity=".9"/><circle cx="95" cy="50" r="1.4" fill="#fff" opacity=".8"/><circle cx="52" cy="62" r="1.8" fill="#ffe8c0" opacity=".85"/><circle cx="68" cy="58" r="2.4" fill="#fff" opacity="1"/><circle cx="85" cy="60" r="1.6" fill="#ffe8c0" opacity=".9"/><circle cx="100" cy="64" r="1.2" fill="#fff" opacity=".7"/><circle cx="38" cy="68" r="1.4" fill="#fff" opacity=".75"/><circle cx="55" cy="72" r="2.0" fill="#fff" opacity=".95"/><circle cx="72" cy="70" r="1.8" fill="#ffe8c0" opacity=".9"/><circle cx="90" cy="74" r="2.2" fill="#fff" opacity=".95"/><circle cx="46" cy="82" r="1.6" fill="#ffe8c0" opacity=".8"/><circle cx="63" cy="86" r="2.0" fill="#fff" opacity=".9"/><circle cx="80" cy="84" r="1.4" fill="#fff" opacity=".85"/><circle cx="97" cy="82" r="1.8" fill="#ffe8c0" opacity=".8"/><circle cx="58" cy="96" r="1.4" fill="#fff" opacity=".7"/><circle cx="75" cy="98" r="2.0" fill="#fff" opacity=".85"/><circle cx="92" cy="94" r="1.2" fill="#fff" opacity=".65"/><circle cx="42" cy="95" r="1.0" fill="#fff" opacity=".6"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
-m3:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_m3"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m3)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="70" cy="70" r="26" fill="#3a3a5c" opacity=".5"/><circle cx="70" cy="70" r="16" fill="#6060a0" opacity=".5"/><circle cx="70" cy="70" r="8" fill="#c0c0e8" opacity=".65"/><circle cx="70" cy="70" r="4" fill="#fff" opacity=".95"/><circle cx="56" cy="58" r="1.0" fill="#fff" opacity=".7"/><circle cx="62" cy="54" r=".8" fill="#fff" opacity=".6"/><circle cx="70" cy="52" r=".8" fill="#fff" opacity=".55"/><circle cx="78" cy="55" r="1.0" fill="#fff" opacity=".7"/><circle cx="84" cy="60" r=".8" fill="#fff" opacity=".6"/><circle cx="86" cy="68" r=".8" fill="#fff" opacity=".55"/><circle cx="84" cy="76" r="1.0" fill="#fff" opacity=".65"/><circle cx="78" cy="83" r=".8" fill="#fff" opacity=".6"/><circle cx="62" cy="84" r="1.0" fill="#fff" opacity=".65"/><circle cx="54" cy="70" r=".8" fill="#fff" opacity=".55"/><circle cx="30" cy="72" r="1.2" fill="#fff" opacity=".65"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
-algieba:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_alg"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_alg)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="58" cy="70" r="10" fill="none" stroke="#e8b040" stroke-width=".5" opacity=".15"/><circle cx="58" cy="70" r="6" fill="none" stroke="#e8b040" stroke-width=".6" opacity=".2"/><circle cx="58" cy="70" r="4.5" fill="#f0c060" opacity=".98"/><circle cx="58" cy="70" r="2.2" fill="#fff8e0" opacity="1"/><circle cx="75" cy="70" r="3.0" fill="#e8b848" opacity=".92"/><circle cx="75" cy="70" r="1.4" fill="#fff0c0" opacity=".95"/><circle cx="30" cy="40" r="1.0" fill="#fff" opacity=".45"/><circle cx="108" cy="38" r=".8" fill="#fff" opacity=".4"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
-leo:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_leo"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_leo)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><ellipse cx="50" cy="56" rx="10" ry="6" fill="#4a4a7a" opacity=".55" transform="rotate(-20 50 56)"/><ellipse cx="50" cy="56" rx="5" ry="3" fill="#8888bb" opacity=".6" transform="rotate(-20 50 56)"/><circle cx="50" cy="56" r="1.5" fill="#ccccee" opacity=".9"/><ellipse cx="82" cy="60" rx="11" ry="6.5" fill="#4a4a7a" opacity=".5" transform="rotate(-15 82 60)"/><ellipse cx="82" cy="60" rx="5.5" ry="3" fill="#8888bb" opacity=".55" transform="rotate(-15 82 60)"/><circle cx="82" cy="60" r="1.5" fill="#ccccee" opacity=".85"/><ellipse cx="66" cy="90" rx="14" ry="4" fill="#3a3a6a" opacity=".4" transform="rotate(5 66 90)"/><ellipse cx="66" cy="90" rx="7" ry="2" fill="#6060a0" opacity=".35" transform="rotate(5 66 90)"/><circle cx="66" cy="90" r="1.2" fill="#aaaacc" opacity=".65"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`,
-m51:`<svg width="110" height="110" viewBox="0 0 140 140"><defs><clipPath id="sk_m51"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m51)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="64" cy="74" r="18" fill="#2a2a50" opacity=".5"/><circle cx="64" cy="74" r="12" fill="#4444a0" opacity=".45"/><circle cx="64" cy="74" r="7" fill="#8080c8" opacity=".55"/><circle cx="64" cy="74" r="3" fill="#e0e0ff" opacity=".95"/><circle cx="84" cy="56" r="9" fill="#2a2a48" opacity=".45"/><circle cx="84" cy="56" r="5" fill="#5858a0" opacity=".5"/><circle cx="84" cy="56" r="2.5" fill="#c0c0e8" opacity=".9"/><path d="M73 67 Q79 61 83 58" stroke="#7070b0" stroke-width=".8" fill="none" opacity=".3"/><circle cx="28" cy="38" r="1.1" fill="#fff" opacity=".55"/><circle cx="112" cy="34" r=".9" fill="#fff" opacity=".45"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/></svg>`
-};
-
-// ── SLIDE CONTENT ─────────────────────────────────────────────────────────────
-const C={
-cover:`<div class="cover-wrap">
-  <div class="cover-dots"><div class="cover-dot lit"></div><div class="cover-dot lit"></div><div class="cover-dot"></div><div class="cover-dot lit"></div><div class="cover-dot"></div><div class="cover-dot lit"></div><div class="cover-dot"></div><div class="cover-dot lit"></div><div class="cover-dot lit"></div></div>
-  <p class="cover-year">April 2026</p>
-  <h1 class="cover-title">April <span class="cover-italic">Skies</span></h1>
-  <p class="cover-sub">Northern Hemisphere · Interactive Guide</p>
-  <div class="spec-row">
-    <span class="pill hi">114mm reflector</span><span class="pill hi">f/7.9</span>
-    <span class="pill">25mm → 36×</span><span class="pill">9mm → 100×</span><span class="pill">True FOV 1.44° / 0.52°</span>
-  </div>
-  <div class="cover-swipe-hint">
-    <kbd>←</kbd><kbd>→</kbd> or swipe &nbsp;·&nbsp; or tap nav above
-    <span class="swipe-arrow-anim">→</span>
-  </div>
-</div>`,
-
-planner:`<h2 class="stitle">April 2026 sky planner</h2>
-<div class="planner-wrap"><table class="planner">
-<thead><tr><th>Dates</th><th>Best targets</th><th>Best time</th><th>Note</th></tr></thead>
-<tbody>
-<tr><td>Apr 1–3</td><td>Moon, Jupiter, M42 & M46/47 (low SW)</td><td>8–10pm</td><td><span class="moon-warn">Full Moon — skip faint deep sky</span></td></tr>
-<tr><td>Apr 1–12</td><td>M42 Orion Nebula, M46 & M47 separately</td><td>8:30–10pm</td><td><span class="moon-warn">Window closing — sets ~11pm</span></td></tr>
-<tr><td>Apr 4–9</td><td>Moon craters, Algieba double star</td><td>10pm–1am</td><td>Moon sets ~2am, improving each night</td></tr>
-<tr><td>Apr 10–16</td><td>M44, M3, Algieba, Leo Triplet</td><td>10pm–2am</td><td>Good dark window after midnight</td></tr>
-<tr style="background:rgba(64,192,160,0.05)"><td style="color:var(--teal);font-weight:600">Apr 17–20</td><td style="color:#fff">★ All spring objects — best of month</td><td>9pm–3am</td><td><span class="dark-win">New Moon Apr 17 — darkest skies</span></td></tr>
-<tr style="background:rgba(64,192,160,0.05)"><td style="color:var(--teal);font-weight:600">Apr 21–22</td><td style="color:#fff">★ Lyrid meteors + all deep sky</td><td>10pm–4am</td><td><span class="dark-win">Lyrid peak — 10–15/hr, Moon down</span></td></tr>
-<tr><td>Apr 10–20</td><td>Comet C/2025 R3 pre-dawn (mag ~8)</td><td>90min before sunrise</td><td>Enters solar glare after Apr 20</td></tr>
-<tr><td>Apr 28–30</td><td>Moon craters (waxing gibbous)</td><td>8–11pm</td><td><span class="moon-warn">Moon brightening — deep sky fading</span></td></tr>
-</tbody>
-</table></div>
-<div class="plan-cards">
-  <div class="pweek"><div class="pw-date">Apr 1–3</div><div class="pw-tg">Moon · Jupiter · M42 & M46/47 low SW</div><div class="pw-time">Best: 8–10pm</div><div class="pw-note moon-warn">Full Moon — skip faint deep sky</div></div>
-  <div class="pweek"><div class="pw-date">Apr 1–12</div><div class="pw-tg">M42 Orion Nebula · M46 & M47 separately</div><div class="pw-time">Best: 8:30–10pm</div><div class="pw-note moon-warn">Window closing — Orion/Puppis sets ~11pm</div></div>
-  <div class="pweek"><div class="pw-date">Apr 4–9</div><div class="pw-tg">Moon craters · Algieba double star</div><div class="pw-time">Best: 10pm–1am</div><div class="pw-note">Moon sets ~2am, improving each night</div></div>
-  <div class="pweek"><div class="pw-date">Apr 10–16</div><div class="pw-tg">M44 · M3 · Algieba · Leo Triplet</div><div class="pw-time">Best: 10pm–2am</div><div class="pw-note">Good dark window after midnight</div></div>
-  <div class="pweek bw"><div class="pw-date">★ Apr 17–20 — Best of Month</div><div class="pw-tg">All spring objects: M44, M3, Algieba, Leo Triplet, M51</div><div class="pw-time">Best: 9pm–3am</div><div class="pw-note dark-win">New Moon Apr 17 — darkest skies all month</div></div>
-  <div class="pweek bw"><div class="pw-date">★ Apr 21–22 — Lyrid Peak</div><div class="pw-tg">Lyrid meteors (radiant in Lyra) + all deep sky</div><div class="pw-time">Best: 10pm–4am, after midnight</div><div class="pw-note dark-win">10–15/hr · Moon sets before midnight</div></div>
-  <div class="pweek"><div class="pw-date">Apr 10–20</div><div class="pw-tg">Comet C/2025 R3 (pre-dawn, mag ~8)</div><div class="pw-time">90 min before sunrise</div><div class="pw-note">Low east · enters solar glare after Apr 20</div></div>
-  <div class="pweek"><div class="pw-date">Apr 28–30</div><div class="pw-tg">Moon craters — terminator detail</div><div class="pw-time">Best: 8–11pm</div><div class="pw-note moon-warn">Waxing gibbous — deep sky fading</div></div>
-</div>`,
-
-moon:`<h2 class="stitle">The Moon — April 2026</h2>
-<p class="sintro">Phase calendar. New Moon Apr 17 is your darkest night. Day 17 glows gold.</p>
-<div class="phase-wrap"><div class="phase-strip">${phStrip}</div></div>
-<div class="two-col">
-  <div class="feat-card"><h4>Clavius crater</h4><p>One of the largest craters on the Moon. At 100× look for smaller craters inside it along the southern terminator — a crater within a crater.</p><p class="best">Best: Apr 19–21 · 9mm (100×)</p></div>
-  <div class="feat-card"><h4>Apennine mountains</h4><p>Dramatic range bordering Mare Imbrium. Peaks cast sharp black shadows at low illumination near the terminator — spectacular at 36×.</p><p class="best">Best: Apr 20–22 · 25mm (36×)</p></div>
-  <div class="feat-card"><h4>Tycho crater</h4><p>Young, sharp-walled crater in the southern highlands. Ray system visible at full moon; walls most dramatic Apr 19–20.</p><p class="best">Best: Apr 19–20 · 9mm (100×)</p></div>
-  <div class="feat-card"><h4>Earthshine</h4><p>Ghostly glow on the dark limb of the crescent Moon. Naked eye or binoculars only — the telescope makes it too bright to appreciate.</p><p class="best">Apr 13–14 pre-dawn · Apr 20–21 post-sunset</p></div>
-</div>`,
-
-planets:`<h2 class="stitle">Planets — April 2026</h2>
-<div class="planet-grid">
-  <div class="pcard"><h3>Jupiter</h3>
-    <div class="prow"><span class="lbl">Constellation</span><span class="val">Gemini</span></div>
-    <div class="prow"><span class="lbl">Visible</span><span class="val">Evening, SW sky</span></div>
-    <div class="prow"><span class="lbl">Sets after sunset</span><span class="val">2–3 hrs</span></div>
-    <div class="prow"><span class="lbl">Brightness</span><span class="val">mag −2.0</span></div>
-    <div class="prow"><span class="lbl">At 36× (25mm)</span><span class="val">Disc + 4 Galilean moons</span></div>
-    <div class="prow"><span class="lbl">At 100× (9mm)</span><span class="val">Cloud bands visible</span></div>
-    <p class="pcard-note">Galilean moons change positions every night. Moon nearby Apr 22.</p>
-    <div class="pcard-ease">${E(5)}</div>
-  </div>
-</div>
-<div class="bonus wb"><h4>Mars — pre-dawn only, very difficult in April 2026</h4><p>Mars is a morning planet rising low in the east before dawn. Extremely difficult from northern latitudes this month due to low altitude. Skip until autumn 2026.</p></div>
-<div class="bonus"><h4>Comet C/2025 R3 — pre-dawn window Apr 10–20 only</h4><p>Magnitude ~8 comet in Pegasus/Pisces, visible at 36× (25mm) ~90 min before sunrise, low east. Enters solar glare around Apr 20–25. Check sky reports before going out.</p></div>
-<div class="bonus"><h4>Lyrid meteor shower — peak night Apr 21–22</h4><p>10–15 meteors/hr at peak. Radiant near Vega in Lyra, rising NE from 10pm. Best after midnight when Moon has set. No telescope needed.</p></div>
-<div class="bonus"><h4>Comet C/2026 A1 (MAPS) — around Apr 4–6</h4><p>A sungrazer at perihelion in early April. Potentially visible low in the western twilight — requires unobstructed horizon. May not survive perihelion. Check reports night-by-night.</p></div>`,
-
-m42:`<div class="obj-card">
-  <div class="obj-head">
-    <div><div class="obj-name">M42 — Orion Nebula</div><div class="obj-type">Emission nebula · Orion · mag 4.0 · 1,350 ly</div></div>
-    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px">${E(5)}</div></div>
-  </div>
-  <div class="obj-note">⚠ April 2026 window closing fast — Orion is setting. Observe 8:30–10pm in the first two weeks only, low southwest. Gone from useful observing by mid-April.</div>
-  <div class="obj-meta">
-    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 1–12</div></div>
-    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">8:30–10pm only</div></div>
-    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">Low SW, sinking</div></div>
-  </div>
-  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
-    <div class="obj-meta-item"><div class="mk">Start with</div><div class="mv">25mm (36×)</div></div>
-    <div class="obj-meta-item"><div class="mk">Then try</div><div class="mv">9mm (100×)</div></div>
-    <div class="obj-meta-item"><div class="mk">Moon caution</div><div class="mv">Survives most phases</div></div>
-  </div>
-  <div class="obj-body">
-    <div class="obj-desc"><h4>What you will see</h4><p>At 36× an unmistakable fan-shaped glow — two bright lobes spread like wings around a luminous core. At 100× the Trapezium becomes the centrepiece: four hot young stars in a tiny trapezoid at the nebula's heart, each cleanly split as individual pinpoints. The surrounding nebulosity gains texture — brighter regions, darker bays. One of the most spectacular objects any telescope can show.</p></div>
-    <div class="obj-sketch-col">${SK.m42}<div class="sketch-lbl">25mm · 36×<br>fan glow + Trapezium</div></div>
-  </div>
-  <div class="obj-finder"><h4>How to find it</h4><p>Find Orion's Belt — three stars in a row, low SW. Below the belt hangs the Sword — a short chain of fainter points. The middle "star" of the Sword looks fuzzy: that's M42. Completely unmistakable.</p></div>
-</div>`,
-
-m4647:`<div class="obj-card">
-  <div class="obj-head">
-    <div><div class="obj-name">M46 &amp; M47 — Twin Clusters</div><div class="obj-type">Open clusters · Puppis · mag 6.1 (M46) / 4.2 (M47) · observe separately</div></div>
-    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px">${E(4)}</div></div>
-  </div>
-  <div class="obj-note">⚠ Early April 2026 only — low SW, sinking fast. Observe as soon as it's fully dark. Not usefully visible after mid-April from northern latitudes.</div>
-  <div class="obj-meta">
-    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 1–10</div></div>
-    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">8:30–10:30pm</div></div>
-    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">Low SW, Puppis</div></div>
-  </div>
-  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
-    <div class="obj-meta-item"><div class="mk">Use</div><div class="mv">25mm (36×) each</div></div>
-    <div class="obj-meta-item"><div class="mk">Separation</div><div class="mv">~1.3° — outside FOV</div></div>
-    <div class="obj-meta-item"><div class="mk">Bonus in M46</div><div class="mv">NGC 2438 nebula</div></div>
-  </div>
-  <div class="obj-body two-sketch">
-    <div class="obj-desc"><h4>What you will see</h4><p>M46 and M47 are 1.3° apart — just outside your 1.44° true FOV at 36×. Observe each separately, then sweep between them to appreciate the contrast. <strong style="color:var(--text);font-weight:normal">M47</strong> is the showpiece: a bright loose scatter of prominent stars with warm yellow-orange giants. <strong style="color:var(--text);font-weight:normal">M46</strong> is a complete contrast — a much denser, uniform cluster of fainter stars, like a fine dusting of salt. At 100× look on M46's northern edge for NGC 2438: a tiny, ghostly ring — a planetary nebula in the foreground of the cluster.</p></div>
-  </div>
-  <div class="two-sketch-row">
-    <div class="two-sketch-cell">${SK.m47}<div class="sketch-lbl">M47 · 25mm · 36×<br>bright &amp; loose</div></div>
-    <div class="two-sketch-cell">${SK.m46}<div class="sketch-lbl">M46 · 25mm · 36×<br>dense · NGC 2438 ring</div></div>
-  </div>
-  <div class="obj-finder"><h4>How to find it</h4><p>Find Sirius — the brightest star, blazing SW. Scan ~12–14° east and slightly north (~1.5 fist-widths). M47 appears first as a bright patch; M46 is ~1.3° further east. Sweep slowly between them.</p></div>
-</div>`,
-
-m44:`<div class="obj-card">
-  <div class="obj-head">
-    <div><div class="obj-name">M44 — Beehive Cluster</div><div class="obj-type">Open cluster · Cancer · mag 3.7 · 577 ly</div></div>
-    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px">${E(5)}</div></div>
-  </div>
-  <div class="obj-meta">
-    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 4–28</div></div>
-    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">9pm–1am</div></div>
-    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">South-SW, high</div></div>
-  </div>
-  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
-    <div class="obj-meta-item"><div class="mk">Use only</div><div class="mv">25mm (36×)</div></div>
-    <div class="obj-meta-item"><div class="mk">Moon caution</div><div class="mv">Survives most phases</div></div>
-    <div class="obj-meta-item"><div class="mk">Skip</div><div class="mv">Apr 1–3 (full moon)</div></div>
-  </div>
-  <div class="obj-body">
-    <div class="obj-desc"><h4>What you will see</h4><p>A spectacular loose swarm of stars filling the whole field. M44 spans ~1.6° — slightly wider than your 1.44° FOV — so stars drift off the edge giving a sense of immersion. Don't switch to the 9mm. Look for the subtle warm yellowish tinge of the K-type giant stars. Naked-eye as a fuzzy patch on a clear night.</p></div>
-    <div class="obj-sketch-col">${SK.m44}<div class="sketch-lbl">25mm · 36×<br>loose star swarm, fills FOV</div></div>
-  </div>
-  <div class="obj-finder"><h4>How to find it</h4><p>Find Castor and Pollux in Gemini (bright pair high SW). Move two fist-widths east — fuzzy naked-eye patch on a clear night. That's M44. Centre it in the 25mm.</p></div>
-</div>`,
-
-m3:`<div class="obj-card">
-  <div class="obj-head">
-    <div><div class="obj-name">M3 — Globular Cluster</div><div class="obj-type">Globular cluster · Canes Venatici · mag 6.2 · 34,000 ly</div></div>
-    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px">${E(4)}</div></div>
-  </div>
-  <div class="obj-meta">
-    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 10–27</div></div>
-    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">11pm–2am</div></div>
-    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">East, rising high</div></div>
-  </div>
-  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
-    <div class="obj-meta-item"><div class="mk">Start with</div><div class="mv">25mm (36×)</div></div>
-    <div class="obj-meta-item"><div class="mk">Then try</div><div class="mv">9mm (100×)</div></div>
-    <div class="obj-meta-item"><div class="mk">Needs</div><div class="mv">Dark skies</div></div>
-  </div>
-  <div class="obj-body">
-    <div class="obj-desc"><h4>What you will see</h4><p>At 36× an obvious round cotton-ball glow with a concentrated bright core. At 100× the halo takes on a slightly granular, salt-and-pepper texture at the edges — tantalising hints of stars, but not cleanly resolved pinpoints. A 114mm aperture cannot fully resolve M3's stars — that requires 150mm or more. The granular texture is real and rewarding. Use averted vision to draw it out.</p></div>
-    <div class="obj-sketch-col">${SK.m3}<div class="sketch-lbl">9mm · 100×<br>granular halo, bright core</div></div>
-  </div>
-  <div class="obj-finder"><h4>How to find it</h4><p>Find bright orange Arcturus high east by midnight. Move ~6° northwest toward Cor Caroli in Canes Venatici, then nudge south. M3 appears as a fuzzy "star" that refuses to sharpen with focus.</p></div>
-</div>`,
-
-algieba:`<div class="obj-card">
-  <div class="obj-head">
-    <div><div class="obj-name">Algieba — γ Leonis</div><div class="obj-type">Binary star · Leo · combined mag 2.0 · 126 ly · separation ~4.6″</div></div>
-    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px">${E(4)}</div></div>
-  </div>
-  <div class="obj-meta">
-    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 4–27</div></div>
-    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">9pm–1am</div></div>
-    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">South, high in Leo</div></div>
-  </div>
-  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
-    <div class="obj-meta-item"><div class="mk">Use</div><div class="mv">9mm (100×)</div></div>
-    <div class="obj-meta-item"><div class="mk">Needs</div><div class="mv">Steady seeing</div></div>
-    <div class="obj-meta-item"><div class="mk">Moon caution</div><div class="mv">Any phase fine</div></div>
-  </div>
-  <div class="obj-body">
-    <div class="obj-desc"><h4>What you will see</h4><p>At 100× two warm golden-orange stars side by side, cleanly separated — one of the most beautiful colour-matched pairs in the sky. Both are giant stars with nearly identical warm hues. Separation ~4.6 arcseconds — comfortably within reach of 114mm on a steady night. If the air is unsteady the pair blurs into one — try again on a calmer night.</p></div>
-    <div class="obj-sketch-col">${SK.algieba}<div class="sketch-lbl">9mm · 100×<br>golden pair, cleanly split</div></div>
-  </div>
-  <div class="obj-finder"><h4>How to find it</h4><p>Find the Sickle of Leo — the backward question-mark with Regulus at the base. Algieba is the bright star near the top of the curve, third brightest in Leo. Naked-eye easy. Point the 9mm at it — steady air needed to split cleanly.</p></div>
-</div>`,
-
-leo:`<div class="obj-card">
-  <div class="obj-head">
-    <div><div class="obj-name">Leo Triplet — M65, M66, NGC 3628</div><div class="obj-type">Galaxy group · Leo · mag 9.3–10.2 · 35 million ly</div></div>
-    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px">${E(2)}</div></div>
-  </div>
-  <div class="obj-meta">
-    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 10–25</div></div>
-    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">10pm–1am</div></div>
-    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">Due south, high</div></div>
-  </div>
-  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
-    <div class="obj-meta-item"><div class="mk">Use</div><div class="mv">25mm (36×)</div></div>
-    <div class="obj-meta-item"><div class="mk">Needs</div><div class="mv">Bortle 4 or better</div></div>
-    <div class="obj-meta-item"><div class="mk">Avoid</div><div class="mv">Any moonlight</div></div>
-  </div>
-  <div class="obj-body">
-    <div class="obj-desc"><h4>What you will see</h4><p>Genuinely challenging for 114mm. On a truly dark night (Bortle 4+), M65 and M66 appear as faint elongated oval smudges with slightly brighter cores. NGC 3628 (the "Hamburger galaxy") is significantly fainter — a thin, low-contrast edge-on streak requiring averted vision and excellent transparency. Completely invisible from light-polluted skies. Reserve for the Apr 17–20 new moon window only.</p></div>
-    <div class="obj-sketch-col">${SK.leo}<div class="sketch-lbl">25mm · 36×<br>faint ovals, dark skies only</div></div>
-  </div>
-  <div class="obj-finder"><h4>How to find it</h4><p>Find Theta Leonis (θ Leo) — bottom-right star in Leo's body. M65 and M66 sit ~1.5° south (three moon-widths). Sweep slowly south at 36×. NGC 3628 is ~0.6° further north — averted vision and patience required.</p></div>
-</div>`,
-
-m51:`<div class="obj-card">
-  <div class="obj-head">
-    <div><div class="obj-name">M51 — Whirlpool Galaxy</div><div class="obj-type">Spiral galaxy + NGC 5195 · Canes Venatici · mag 8.4 · 23 million ly</div></div>
-    <div><div class="ease-label">Ease</div><div class="er" style="gap:3px">${E(3)}</div></div>
-  </div>
-  <div class="obj-meta">
-    <div class="obj-meta-item"><div class="mk">Best dates</div><div class="mv">Apr 10–27</div></div>
-    <div class="obj-meta-item"><div class="mk">Best time</div><div class="mv">11pm–2am</div></div>
-    <div class="obj-meta-item"><div class="mk">Direction</div><div class="mv">North, high overhead</div></div>
-  </div>
-  <div class="obj-meta" style="border-bottom:1px solid var(--border)">
-    <div class="obj-meta-item"><div class="mk">Start with</div><div class="mv">25mm (36×)</div></div>
-    <div class="obj-meta-item"><div class="mk">Then try</div><div class="mv">9mm (100×)</div></div>
-    <div class="obj-meta-item"><div class="mk">Needs</div><div class="mv">Excellent dark skies</div></div>
-  </div>
-  <div class="obj-body">
-    <div class="obj-desc"><h4>What you will see</h4><p>At 36× two fuzzy glows close together — M51 and companion NGC 5195. At 100× M51's core brightens and both nuclei are distinct. The faint bridge may be hinted at with averted vision on the very best nights. Note: spiral arms are NOT visible at 114mm — that requires 150–200mm. What you see is a round, uneven glow. Still the showpiece of the month.</p></div>
-    <div class="obj-sketch-col">${SK.m51}<div class="sketch-lbl">9mm · 100×<br>two nuclei, hint of bridge</div></div>
-  </div>
-  <div class="obj-finder"><h4>How to find it</h4><p>Find Alkaid — end star of the Big Dipper's handle. M51 sits ~3.5° southwest (7 moon-widths). At 36× sweep slowly — the double glow is the giveaway.</p></div>
-</div>`,
-
-conditions:`<h2 class="stitle">Conditions &amp; observer's log</h2>
-<div class="cond-grid">
-  <div class="cond-box"><h4>Transparency vs seeing</h4><p>Transparency = how clear the air is (affects faint objects). Seeing = how steady the air is (affects fine detail and double star splitting at 100×). For galaxies: prioritise transparency. For Algieba, planets, and the Moon: prioritise seeing.</p></div>
-  <div class="cond-box"><h4>Averted vision</h4><p>Look slightly to the side of a faint object to use the eye's rod cells (~10–15° off-centre). Essential for the Leo Triplet, M51, M3's granular halo, and NGC 2438. Takes a few sessions to become natural.</p></div>
-</div>
-<p style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;font-family:var(--sans);margin-bottom:9px;">Pre-session checklist</p>
-<ul class="checklist">
-  <li><span class="chk">○</span>Let telescope cool outside 30–45 min — a warm mirror creates thermal currents that blur all magnifications</li>
-  <li><span class="chk">○</span>Allow 20 min for eyes to dark-adapt — red torch only, avoid all white light</li>
-  <li><span class="chk">○</span>Check Moon phase — plan deep sky sessions around Apr 10–27 new moon window</li>
-  <li><span class="chk">○</span>Start with 25mm (36×) to find every object, then switch to 9mm (100×) for detail</li>
-  <li><span class="chk">○</span>Clean eyepieces only if needed — lens cloth, breathe gently on glass, never use tissue</li>
-  <li><span class="chk">○</span>Note time, seeing (1–5) and transparency (1–5) — patterns across sessions reveal your best nights</li>
-</ul>
-<div class="log-grid">
-  <div class="log-box"><h4>Session log</h4>
-    <div class="log-line">Date: ___________________</div>
-    <div class="log-line">Time start: ______________</div>
-    <div class="log-line">Seeing (1–5): ____________</div>
-    <div class="log-line">Transparency (1–5): ______</div>
-    <div class="log-line">Objects observed: ________</div>
-    <div class="log-line">Notes: __________________</div>
-  </div>
-  <div class="log-box"><h4>Eyepiece sketches</h4>
-    <div class="sketch-pair">
-      <div class="sketch-mini"><svg width="56" height="56" viewBox="0 0 60 60"><circle cx="30" cy="30" r="27" fill="#0d0d1c"/><circle cx="30" cy="30" r="27" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1"/></svg><span>25mm · 36×</span></div>
-      <div class="sketch-mini"><svg width="56" height="56" viewBox="0 0 60 60"><circle cx="30" cy="30" r="27" fill="#0d0d1c"/><circle cx="30" cy="30" r="27" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1"/></svg><span>9mm · 100×</span></div>
-    </div>
-  </div>
-</div>`,
-
-glossary:`<h2 class="stitle">Quick glossary</h2>
-<div class="gloss-grid">
-  <div class="gloss-item"><div class="gloss-term">Magnitude (mag)</div><div class="gloss-def">Brightness scale — lower is brighter. Sun −26, naked eye limit ~6, your scope reaches ~12.</div></div>
-  <div class="gloss-item"><div class="gloss-term">True FOV</div><div class="gloss-def">AFOV ÷ magnification. At 36× with 52° AFOV: 52÷36 = 1.44°. The Moon is 0.5° wide.</div></div>
-  <div class="gloss-item"><div class="gloss-term">Averted vision</div><div class="gloss-def">Look slightly off-centre to use rod cells. Essential for faint galaxies and M3's halo texture.</div></div>
-  <div class="gloss-item"><div class="gloss-term">Seeing</div><div class="gloss-def">Atmospheric steadiness. Poor seeing blurs stars and prevents double star splits.</div></div>
-  <div class="gloss-item"><div class="gloss-term">Terminator</div><div class="gloss-def">Light/dark boundary on the Moon — the best place to see shadow-enhanced crater detail.</div></div>
-  <div class="gloss-item"><div class="gloss-term">Dark adaptation</div><div class="gloss-def">Eyes need ~20 min in full darkness for peak sensitivity. One white light flash resets it.</div></div>
-  <div class="gloss-item"><div class="gloss-term">Arcsecond (″)</div><div class="gloss-def">1/3600 of a degree. Algieba's 4.6″ gap is comfortably split at 100× on a steady night.</div></div>
-  <div class="gloss-item"><div class="gloss-term">Bortle scale</div><div class="gloss-def">1–9 sky darkness scale. Leo Triplet and NGC 3628 need Bortle 4 or better.</div></div>
-  <div class="gloss-item"><div class="gloss-term">Trapezium</div><div class="gloss-def">Four hot young stars at M42's core — clearly split as pinpoints at 100×.</div></div>
-  <div class="gloss-item"><div class="gloss-term">AFOV</div><div class="gloss-def">Apparent field of view of the eyepiece. Your 25mm has ~52°. Divide by magnification for true FOV.</div></div>
-</div>
-<div class="limit-box"><strong style="color:var(--text)">Your 114mm f/7.9 reflector's limits:</strong> limiting magnitude ~12 under dark skies · max useful magnification ~230× (100× practical ceiling most nights) · 265× more light than the naked eye · resolving power ~1 arcsecond on the best nights · cannot fully resolve globular clusters — only granular halo texture at the edges.</div>
-<div class="quote-box">"The universe is under no obligation to make sense to you." — Neil deGrasse Tyson</div>`,
-
-credits:`<div class="credits-wrap">
-  <div class="credits-star">✦</div>
-  <div class="credits-title">April 2026 Skies</div>
-
-  <div class="credits-block">
-    <div class="credits-role">Author</div>
-    <div class="credits-name">Anish Mangal</div>
-  </div>
-
-  <div class="credits-block">
-    <div class="credits-role">Inputs by</div>
-    <div class="credits-name-sm">Ishan Chrungoo</div>
-    <div class="credits-name-sm">Sohail Lalani</div>
-  </div>
-
-  <div class="credits-scope">
-    <strong>Telescope</strong> · 114mm f/7.9 Newtonian reflector<br>
-    <strong>Eyepieces</strong> · 25mm (36×) &nbsp;·&nbsp; 9mm (100×)<br>
-    <strong>Hemisphere</strong> · Northern &nbsp;·&nbsp; <strong>Month</strong> · April 2026
-  </div>
-
-  <div class="credits-quote">
-    "The universe is under no obligation to make sense to you."<br>
-    <span style="font-size:11px;font-style:normal;color:var(--dim);letter-spacing:.06em;">— Neil deGrasse Tyson</span>
-  </div>
-</div>`
-};
-
-// ── BUILD DOM ─────────────────────────────────────────────────────────────────
-const topnav    = document.getElementById('topnav');
-const subnav    = document.getElementById('subnav');
-const track     = document.getElementById('slide-track');
-const progressEl= document.getElementById('progress');
-const counterEl = document.getElementById('counter');
-const dotsEl    = document.getElementById('swipe-dots');
-const prevBtn   = document.getElementById('hint-prev');
-const nextBtn   = document.getElementById('hint-next');
-
-let current = 0;
-
-// Set track width to N × 100vw
-track.style.width = N * 100 + 'vw';
-
-// Top nav links
-SLIDES.forEach(s => {
-  if (s.group === 'objects') return;
-  const a = document.createElement('a');
-  a.textContent = s.label;
-  if (s.isGroup) {
-    a.dataset.group = 'objects';
-    a.addEventListener('click', () => {
-      goTo(RENDERABLE.findIndex(r => r.group === 'objects'));
-    });
-  } else {
-    const idx = RENDERABLE.findIndex(r => r.id === s.id);
-    a.dataset.idx = idx;
-    a.addEventListener('click', () => goTo(idx));
-  }
-  topnav.appendChild(a);
-});
-
-// Sub-nav links
-RENDERABLE.forEach((s, idx) => {
-  if (s.group !== 'objects') return;
-  const a = document.createElement('a');
-  a.textContent = s.label;
-  a.dataset.idx = idx;
-  a.addEventListener('click', () => goTo(idx));
-  subnav.appendChild(a);
-});
-
-// Dot indicators (max 20 shown, grouped)
-const MAX_DOTS = N <= 20 ? N : 20;
-for (let i = 0; i < N; i++) {
-  const d = document.createElement('div');
-  d.className = 'sdot' + (i === 0 ? ' active' : '');
-  d.addEventListener('click', () => goTo(i));
-  dotsEl.appendChild(d);
-}
-
-// Build slide panels
-RENDERABLE.forEach((s, i) => {
-  const div = document.createElement('div');
-  div.className = 'slide';
-  div.id = s.id;
-  const inner = document.createElement('div');
-  inner.className = 'slide-inner';
-  inner.innerHTML = C[s.id] || `<h2 class="stitle">${s.label}</h2>`;
-  div.appendChild(inner);
-  track.appendChild(div);
-});
-
-// ── SUBNAV TOP ADJUSTMENT ─────────────────────────────────────────────────────
-function setTrackTop(withSub) {
-  track.classList.toggle('with-sub', withSub);
-}
-
-// ── UPDATE UI ─────────────────────────────────────────────────────────────────
-function updateUI(idx) {
-  const slide   = RENDERABLE[idx];
-  const isObj   = slide.group === 'objects';
-
-  // top nav
-  topnav.querySelectorAll('a').forEach(a => {
-    if (a.dataset.group === 'objects') a.classList.toggle('active', isObj);
-    else if (a.dataset.idx != null)    a.classList.toggle('active', +a.dataset.idx === idx);
-  });
-
-  // subnav
-  subnav.classList.toggle('visible', isObj);
-  setTrackTop(isObj);
-  const objSlides = RENDERABLE.filter(s => s.group === 'objects');
-  subnav.querySelectorAll('a').forEach((a, i) =>
-    a.classList.toggle('active', objSlides[i] && objSlides[i].id === slide.id)
-  );
-  if (isObj) {
-    subnav.querySelector('a.active')?.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
-  }
-  topnav.querySelector('a.active')?.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
-
-  // progress
-  progressEl.style.width = (idx / (N - 1) * 100) + '%';
-  counterEl.textContent  = (idx + 1) + ' / ' + N;
-
-  // dots
-  dotsEl.querySelectorAll('.sdot').forEach((d, i) => d.classList.toggle('active', i === idx));
-
-  // arrow visibility
-  prevBtn.classList.toggle('gone', idx === 0);
-  nextBtn.classList.toggle('gone', idx === N - 1);
-}
-
-// ── GO TO SLIDE ───────────────────────────────────────────────────────────────
-function goTo(idx) {
-  if (idx < 0 || idx >= N) return;
-  // reset vertical scroll of the slide we're leaving
-  track.children[current].scrollTop = 0;
-  current = idx;
-  track.style.transform = `translateX(${-idx * 100}vw)`;
-  updateUI(idx);
-}
-
-// ── KEYBOARD ──────────────────────────────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
-  else if (e.key === 'ArrowLeft')               { e.preventDefault(); goTo(current - 1); }
-});
-
-// ── ARROW BUTTONS ─────────────────────────────────────────────────────────────
-prevBtn.addEventListener('click', () => goTo(current - 1));
-nextBtn.addEventListener('click', () => goTo(current + 1));
-
-// ── TOUCH SWIPE (horizontal) ──────────────────────────────────────────────────
-// Horizontal swipe always changes slide.
-// Vertical touch scrolls the slide content normally.
-let tX0 = 0, tY0 = 0, tScrolling = null;
-
-track.addEventListener('touchstart', e => {
-  tX0 = e.touches[0].clientX;
-  tY0 = e.touches[0].clientY;
-  tScrolling = null;
-}, { passive: true });
-
-track.addEventListener('touchmove', e => {
-  if (tScrolling === null) {
-    const dx = Math.abs(e.touches[0].clientX - tX0);
-    const dy = Math.abs(e.touches[0].clientY - tY0);
-    tScrolling = dy > dx ? 'vertical' : 'horizontal';
-  }
-  if (tScrolling === 'horizontal') e.preventDefault();
-}, { passive: false });
-
-track.addEventListener('touchend', e => {
-  if (tScrolling !== 'horizontal') return;
-  const dx = tX0 - e.changedTouches[0].clientX;
-  if (Math.abs(dx) > 50) goTo(dx > 0 ? current + 1 : current - 1);
-}, { passive: true });
-
-// ── INIT ──────────────────────────────────────────────────────────────────────
-setTrackTop(false);
-updateUI(0);
-
-// ── REDSHIFT BUBBLE ───────────────────────────────────────────────────────────
-const bubble = document.getElementById('nightmode-bubble');
-const nbIcon = bubble.querySelector('.nb-icon');
-// sun = normal sky; red circle = red-shift on
-bubble.addEventListener('click', () => {
-  const on = document.body.classList.toggle('red-sky');
-  nbIcon.innerHTML = on ? '&#x25CF;' : '&#x2600;&#xFE0E;';
-  document.querySelector('meta[name="theme-color"]').content = on ? '#100400' : '#09090f';
-});
-
-// ── SERVICE WORKER ────────────────────────────────────────────────────────────
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(r => console.log('SW:', r.scope))
-      .catch(e => console.warn('SW failed:', e));
-  });
-}
-</script>
+<!-- Load order: data → sketches (shared SVG registry) → engine -->
+<script src="./data-april-2026.js"></script>
+<script src="./sketches.js"></script>
+<script src="./app.js"></script>
 </body>
 </html>

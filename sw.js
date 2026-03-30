@@ -1,8 +1,9 @@
-const CACHE = 'april-skies-v2';
+const CACHE = 'april-skies-v3';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
+  './sketches.js',
   './icon-192.png',
   './icon-512.png'
 ];
