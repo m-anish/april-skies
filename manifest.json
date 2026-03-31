@@ -1,7 +1,7 @@
 {
-  "name": "April Skies — Night Sky Guide 2026",
-  "short_name": "April Skies",
-  "description": "Interactive night sky guide for April 2026 — 114mm reflector telescope",
+  "name": "Clear Skies — Night Sky Guide",
+  "short_name": "Clear Skies",
+  "description": "Monthly interactive night sky guide — 114mm reflector telescope",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait-primary",

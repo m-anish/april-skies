@@ -7,10 +7,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Night Sky Guide"><!-- patched by app.js -->
+<meta name="apple-mobile-web-app-title" content="Clear Skies"><!-- patched by app.js -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Night Sky Guide</title><!-- patched by app.js -->
+<title>Clear Skies</title><!-- patched by app.js -->
 <style>
 /* ── TOKENS ─────────────────────────────────────────────────────────────── */
 :root {
@@ -279,6 +279,49 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
   .two-sketch-cell:last-child{border-bottom:none;}
   .obj-meta{grid-template-columns:1fr 1fr;}
 }
+/* ── SEASON-AWARE NAV ACTIVE ─────────────────────────────────────────────── */
+#topnav a.active{color:var(--season, var(--gold));border-color:var(--season, var(--gold2));background:rgba(var(--season-rgb,240,192,64),0.07);}
+
+/* ── CONSTELLATION WATERMARK ─────────────────────────────────────────────── */
+.cover-constellation{
+  position:absolute;inset:0;width:100%;height:100%;
+  color:rgba(255,255,255,0.045);
+  pointer-events:none;overflow:visible;
+}
+
+/* ── COVER QUOTE ─────────────────────────────────────────────────────────── */
+.cover-quote{
+  margin-top:18px;max-width:520px;text-align:center;
+  border-top:1px solid var(--border);padding-top:14px;
+}
+.cover-quote-text{
+  display:block;font-style:italic;font-size:clamp(11px,1.6vw,13px);
+  color:var(--dim);line-height:1.65;margin-bottom:5px;
+}
+.cover-quote-attr{
+  font-family:var(--sans);font-size:10px;color:var(--dim);
+  opacity:.7;letter-spacing:.05em;
+}
+
+/* ── UPDATE TOAST ────────────────────────────────────────────────────────── */
+#update-toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);
+  z-index:600;
+  background:var(--card);border:1px solid var(--teal);border-radius:8px;
+  padding:10px 20px;font-family:var(--sans);font-size:12px;color:var(--teal);
+  cursor:pointer;white-space:nowrap;
+  box-shadow:0 4px 24px rgba(0,0,0,0.6);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1), opacity .35s;
+  opacity:0;pointer-events:none;
+  letter-spacing:.04em;
+}
+#update-toast.visible{
+  transform:translateX(-50%) translateY(0);
+  opacity:1;pointer-events:auto;
+}
+#update-toast:hover{background:rgba(64,192,160,0.12);}
+#update-toast::before{content:'✦ ';font-size:10px;}
+
 @media(min-width:900px){
   #topnav a{font-size:15px;}
   #subnav a{font-size:14px;}
@@ -339,10 +382,13 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
 <div id="swipe-dots"></div>
 <div id="progress"></div>
 <div id="counter"></div>
+<div id="update-toast" role="button" aria-label="New edition available — tap to update">New edition available — tap to update</div>
 
-<!-- Load order: data → sketches → objects catalogue → log engine → log UI → app engine -->
+<!-- Load order: data → sketches → constellations → quotes → objects → log → app -->
 <script src="./data-april-2026.js"></script>
 <script src="./sketches.js"></script>
+<script src="./constellations.js"></script>
+<script src="./quotes.js"></script>
 <script src="./objects-db.js"></script>
 <script src="./log.js"></script>
 <script src="./log-ui.js"></script>

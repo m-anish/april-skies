@@ -10,9 +10,17 @@ window.SKY_DATA = {
   month:       'April',
   year:        2026,
   hemisphere:  'northern',
-  title:       'April Skies',          // cover h1 (non-italic part)
-  titleItalic: 'Skies',               // the italic gold word
+  title:       'April Skies',
+  titleItalic: 'Skies',
   subtitle:    'Northern Hemisphere · Interactive Guide',
+
+  // ── MONTH CHARACTER ────────────────────────────────────────────────────────
+  // These four fields drive the visual personality of this month's edition.
+  // All are optional — app.js uses sensible defaults if omitted.
+  season:             'spring',
+  seasonAccent:       '#c8955a',   // warm amber-rose — late spring, Leo rising
+  coverConstellation: 'leo',       // key into constellations.js
+  starWarmBias:       0.52,        // spring sky leans warm; 0.35 = neutral default
 
   // ── TELESCOPE ──────────────────────────────────────────────────────────────
   scope: {
