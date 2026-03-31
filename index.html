@@ -108,7 +108,7 @@ html,body{background:var(--bg);color:var(--text);font-family:Georgia,'Times New 
 }
 #nightmode-bubble:hover{transform:scale(1.1);border-color:rgba(220,210,255,0.75);}
 #nightmode-bubble:active{transform:scale(0.92);}
-#nightmode-bubble .nb-icon{font-size:24px;line-height:1;display:block;transition:transform .4s cubic-bezier(.34,1.56,.64,1),filter .35s;filter:none;color:#fff8e0;margin-top:2px;}
+#nightmode-bubble .nb-icon{font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;width:100%;height:100%;transition:transform .4s cubic-bezier(.34,1.56,.64,1),filter .35s;filter:none;color:#fff8e0;}
 body.red-sky #nightmode-bubble{background:rgba(60,8,0,0.94);border-color:rgba(255,80,30,0.65);box-shadow:0 0 22px rgba(255,50,10,0.5),0 2px 8px rgba(0,0,0,0.55);}
 body.red-sky #nightmode-bubble:hover{border-color:rgba(255,100,50,0.88);}
 body.red-sky #nightmode-bubble .nb-icon{transform:scale(1.05) translateY(1px);filter:sepia(1) saturate(3) hue-rotate(-10deg) brightness(1.2);}
@@ -246,13 +246,7 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
 .checklist li{display:flex;gap:10px;font-size:12px;color:var(--muted);padding:7px 0;border-bottom:1px solid var(--border);line-height:1.5;}
 .checklist li:last-child{border-bottom:none;}
 .chk{color:var(--border2);flex-shrink:0;}
-.log-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
-.log-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px;}
-.log-box h4{font-size:10px;color:var(--dim);font-family:var(--sans);text-transform:uppercase;letter-spacing:.08em;margin-bottom:9px;}
-.log-line{font-size:11px;color:var(--dim);font-family:var(--sans);border-bottom:1px solid var(--border);padding:5px 0;}
-.sketch-pair{display:flex;gap:12px;justify-content:center;padding-top:4px;}
-.sketch-mini{text-align:center;}
-.sketch-mini span{font-size:9px;color:var(--dim);font-family:var(--sans);display:block;margin-top:4px;}
+.log-grid{display:none;} /* replaced by floating log overlay */
 
 /* ── GLOSSARY ────────────────────────────────────────────────────────────── */
 .gloss-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
@@ -346,9 +340,12 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
 <div id="progress"></div>
 <div id="counter"></div>
 
-<!-- Load order: data → sketches (shared SVG registry) → engine -->
+<!-- Load order: data → sketches → objects catalogue → log engine → log UI → app engine -->
 <script src="./data-april-2026.js"></script>
 <script src="./sketches.js"></script>
+<script src="./objects-db.js"></script>
+<script src="./log.js"></script>
+<script src="./log-ui.js"></script>
 <script src="./app.js"></script>
 </body>
 </html>

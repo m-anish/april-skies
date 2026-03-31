@@ -1,9 +1,12 @@
-const CACHE = 'april-skies-v3';
+const CACHE = 'april-skies-v4';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './sketches.js',
+  './objects-db.js',
+  './log.js',
+  './log-ui.js',
   './icon-192.png',
   './icon-512.png'
 ];

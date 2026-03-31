@@ -20,9 +20,7 @@ function E(n) {
 }
 
 function sketch(s, size = 110) {
-  const svgContent = (window.SKY_SKETCHES && window.SKY_SKETCHES[s.svgId]) || '';
-  if (!svgContent) console.warn(`[app.js] Missing sketch: ${s.svgId} — add it to sketches.js`);
-  return `<svg width="${size}" height="${size}" viewBox="0 0 140 140">${svgContent}</svg>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 140 140">${s.svg}</svg>`;
 }
 
 // ── STARFIELD ──────────────────────────────────────────────────────────────
@@ -449,7 +447,7 @@ const bubble = document.getElementById('nightmode-bubble');
 const nbIcon = bubble.querySelector('.nb-icon');
 bubble.addEventListener('click', () => {
   const on = document.body.classList.toggle('red-sky');
-  nbIcon.innerHTML = on ? '&#x25CF;' : '&#x2600;&#xFE0E;';
+  nbIcon.innerHTML = on ? '🪐' : '&#x2600;&#xFE0E;';
   document.querySelector('meta[name="theme-color"]').content = on ? '#100400' : '#09090f';
 });
 
