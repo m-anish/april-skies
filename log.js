@@ -48,6 +48,7 @@ window.SkyLog = {
       year:         D ? D.year  : 0,
       date:         fields.date         || '',
       timeStart:    fields.timeStart    || '',
+      timeEnd:      fields.timeEnd      || '',
       seeing:       fields.seeing       || 0,
       transparency: fields.transparency || 0,
       objects:      fields.objects      || [],  // array of name strings
@@ -91,9 +92,9 @@ window.SkyLog = {
   exportCSV() {
     const entries = this.all();
     if (!entries.length) return;
-    const header = ['ID','Date','Time','Month','Year','Seeing','Transparency','Objects','Notes'];
+    const header = ['ID','Date','TimeStart','TimeEnd','Month','Year','Seeing','Transparency','Objects','Notes'];
     const rows = entries.map(e => [
-      e.id, e.date, e.timeStart, e.month, e.year,
+      e.id, e.date, e.timeStart, e.timeEnd || '', e.month, e.year,
       e.seeing, e.transparency,
       '"' + (e.objects || []).join('; ').replace(/"/g, '""') + '"',
       '"' + (e.notes   || '').replace(/"/g, '""') + '"',
