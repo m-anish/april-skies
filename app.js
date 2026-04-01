@@ -125,8 +125,8 @@ function buildCover() {
   return `<div class="cover-wrap">
   ${constellationWatermark()}
   <div class="cover-dots"><div class="cover-dot lit"></div><div class="cover-dot lit"></div><div class="cover-dot"></div><div class="cover-dot lit"></div><div class="cover-dot"></div><div class="cover-dot lit"></div><div class="cover-dot"></div><div class="cover-dot lit"></div><div class="cover-dot lit"></div></div>
-  <p class="cover-year">${D.month} ${D.year}</p>
-  <h1 class="cover-title">${D.month} <span class="cover-italic" style="color:var(--season)">${D.titleItalic}</span></h1>
+  <p class="cover-year">Clear Skies</p>
+  <h1 class="cover-title">${D.month} <span class="cover-italic" style="color:var(--season)">${D.year}</span></h1>
   <p class="cover-sub">${D.subtitle}</p>
   <div class="spec-row">
     <span class="pill hi">${D.scope.aperture}mm reflector</span>
@@ -164,7 +164,7 @@ function buildPlanner() {
   }).join('');
 
   const phases = D.moonEvents;
-  return `<h2 class="stitle">${D.month} ${D.year} sky planner</h2>
+  return `<h2 class="stitle">Sky at a glance — ${D.month} ${D.year}</h2>
 <p class="sintro">Full Moon ${phases.full} · Last Qtr ${phases.lastQtr} · New Moon ${phases.newMoon} · First Qtr ${phases.firstQtr}</p>
 <div class="planner-wrap"><table class="planner">
 <thead><tr><th>Dates</th><th>Best targets</th><th>Best time</th><th>Note</th></tr></thead>
