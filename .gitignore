@@ -1,0 +1,41 @@
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# ── Editors ──────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Node (if you ever add a build step) ──────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.npm
+
+# ── Local dev servers ─────────────────────────────────────────────────────────
+.env
+.env.local
+
+# ── Archive / working drafts ─────────────────────────────────────────────────
+# Old monthly editions — keep in git history, not working tree
+# Uncomment if you want to exclude old data files from the working tree:
+# data-*.js
+# !data-[current-month]-[current-year].js
+
+# Scratch / generation working files
+scratch/
+_draft/
+_old/
+
+# ── PWA icons (generated assets — regenerate from source) ────────────────────
+# Comment these out if you want to track them in the repo (recommended for PWA)
+# icon-192.png
+# icon-512.png
