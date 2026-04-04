@@ -88,10 +88,17 @@ window.SKY_DATA = {
   planner: [
     {
       dates:   'Apr 1–3',
-      targets: 'Moon, Jupiter, M42 & M46/47 (low SW)',
+      targets: 'Moon, Jupiter, Venus (low W), M42 & M46/47 (low SW)',
       time:    '8–10pm',
       note:    'Full Moon — skip faint deep sky',
       type:    'warn',
+    },
+    {
+      dates:   'Apr 1–30',
+      targets: 'Venus low WNW, climbing higher each week',
+      time:    '8:30–9:30pm',
+      note:    'Clear WNW horizon essential',
+      type:    'normal',
     },
     {
       dates:   'Apr 1–12',
@@ -143,7 +150,7 @@ window.SKY_DATA = {
       type:    'warn',
     },
   ],
-  plannerFooter: 'Orion/Puppis → low SW 8:30pm · Leo/Virgo → due south 11pm · M44 → south-SW · M3 → east-SE by midnight',
+  plannerFooter: 'Venus → low WNW at dusk, climbing all month · Orion/Puppis → low SW 8:30pm · Leo/Virgo → due south 11pm · M44 → south-SW · M3 → east-SE by midnight',
 
   // ── PLANETS ────────────────────────────────────────────────────────────────
   planets: [
@@ -151,21 +158,38 @@ window.SKY_DATA = {
       name:       'Jupiter',
       ease:       5,
       rows: [
-        ['Constellation', 'Gemini'],
-        ['Visible',        'Evening, SW sky'],
-        ['Sets after sunset', '2–3 hrs'],
-        ['Brightness',     'mag −2.0'],
-        ['At 36× (25mm)', 'Disc + 4 Galilean moons'],
-        ['At 100× (9mm)', 'Cloud bands visible'],
+        ['Constellation',    'Gemini'],
+        ['Visible',          'Evening, SW sky'],
+        ['Sets after sunset','2–3 hrs'],
+        ['Brightness',       'mag −2.1'],
+        ['At 36× (25mm)',   'Disc + 4 Galilean moons'],
+        ['At 100× (9mm)',   'Cloud bands, equatorial belts'],
       ],
-      note: 'Galilean moons change positions every night. Moon nearby Apr 22.',
+      note: 'Galilean moons change configuration nightly. Crescent Moon nearby Apr 22–23.',
     },
-    // Venus omitted this month — not prominent enough to merit a card
+    {
+      name:       'Venus',
+      ease:       4,
+      rows: [
+        ['Constellation',    'Aries → Taurus (from Apr 19)'],
+        ['Visible',          'Evening, low western horizon'],
+        ['Sets after sunset','~1.5 hrs (Apr 1) → ~2.5 hrs (Apr 30)'],
+        ['Brightness',       'mag −3.9 — blazing white'],
+        ['At 36× (25mm)',   'Tiny gibbous disc, ~11–12″'],
+        ['At 100× (9mm)',   '94→88% lit, featureless disc'],
+      ],
+      note: '⚠ Low horizon essential — best from an elevated spot facing WNW. Crescent Moon nearby Apr 18–19 near the Pleiades. Passes close to Uranus Apr 23–24.',
+    },
   ],
 
   // Events / bonus alert cards below the planet cards
   // type: 'warn' (orange border) | 'info' (teal border)
   events: [
+    {
+      type:  'warn',
+      title: 'Venus — brilliant but low, clear horizon required',
+      body:  'Venus blazes at mag −3.9 in the west-northwest after sunset all month — the brightest object in the sky after the Moon. From 32°N it sits only ~13° high 30 min after sunset early in the month, climbing to ~20° by month\'s end. An unobstructed WNW horizon is essential. Through the telescope: a small, nearly full gibbous disc (11–12″, 88–94% lit) with no surface detail — but the sheer brilliance is worth a look. Best naked-eye event: crescent Moon near Venus and the Pleiades on Apr 18–19.',
+    },
     {
       type:  'warn',
       title: 'Mars — pre-dawn only, very difficult in April 2026',

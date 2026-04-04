@@ -1,14 +1,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // app.js — Clear Skies PWA engine
-// Reads from window.SKY_DATA (loaded by loader.js before calling SKY_INIT).
+// Reads from window.SKY_DATA (loaded by data-[month]-[year].js).
 // This file never changes month to month.
 // ─────────────────────────────────────────────────────────────────────────────
 
-window.SKY_INIT = function () {
+(function () {
 'use strict';
 
 const D = window.SKY_DATA;
-if (!D) { console.error('[app.js] No SKY_DATA — loader.js should call SKY_INIT after data loads.'); return; }
+if (!D) { document.body.innerHTML = '<p style="color:red;padding:2rem">No SKY_DATA found. Include a data-[month].js before app.js.</p>'; return; }
 
 // ── PATCH DOCUMENT METADATA ────────────────────────────────────────────────
 document.title = `${D.month} ${D.year} — Clear Skies`;
@@ -623,4 +623,4 @@ function renderNextTeaser() {
 window.SKY_RENDER_NEXT_TEASER = renderNextTeaser;
 renderNextTeaser(); // in case loader already resolved before app.js ran
 
-}; // end SKY_INIT
+})(); // end IIFE

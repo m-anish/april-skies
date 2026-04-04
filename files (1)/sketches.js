@@ -39,7 +39,15 @@ window.SKY_SKETCHES = {
   // ── M51 — Whirlpool Galaxy ─────────────────────────────────────────────────
   sk_m51: `<defs><clipPath id="sk_m51"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m51)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="64" cy="74" r="18" fill="#2a2a50" opacity=".5"/><circle cx="64" cy="74" r="12" fill="#4444a0" opacity=".45"/><circle cx="64" cy="74" r="7" fill="#8080c8" opacity=".55"/><circle cx="64" cy="74" r="3" fill="#e0e0ff" opacity=".95"/><circle cx="84" cy="56" r="9" fill="#2a2a48" opacity=".45"/><circle cx="84" cy="56" r="5" fill="#5858a0" opacity=".5"/><circle cx="84" cy="56" r="2.5" fill="#c0c0e8" opacity=".9"/><path d="M73 67 Q79 61 83 58" stroke="#7070b0" stroke-width=".8" fill="none" opacity=".3"/><circle cx="28" cy="38" r="1.1" fill="#fff" opacity=".55"/><circle cx="112" cy="34" r=".9" fill="#fff" opacity=".45"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/>`,
 
-  // ── May 2026 additions ────────────────────────────────────────────────────
+  // ── ADD NEW SKETCHES BELOW ─────────────────────────────────────────────────
+  // Pattern:
+  //   sk_<id>: `<defs>...</defs>...`,
+  //
+  // Example (M13 — Great Hercules Cluster):
+  //   sk_m13: `<defs><clipPath id="sk_m13">...</clipPath></defs>...`,
+
+
+  // ── ADD NEW SKETCHES BELOW ─────────────────────────────────────────────────
 
   // ── M13 — Great Hercules Cluster ───────────────────────────────────────────
   sk_m13: `<defs><clipPath id="sk_m13"><circle cx="70" cy="70" r="62"/></clipPath></defs><circle cx="70" cy="70" r="66" fill="#0a0a14"/><g clip-path="url(#sk_m13)"><circle cx="70" cy="70" r="62" fill="#0c0c18"/><circle cx="70" cy="70" r="28" fill="#3a3a5c" opacity=".55"/><circle cx="70" cy="70" r="18" fill="#6060a0" opacity=".52"/><circle cx="70" cy="70" r="10" fill="#c0c0e8" opacity=".68"/><circle cx="70" cy="70" r="5" fill="#fff" opacity=".96"/><circle cx="54" cy="56" r="1.1" fill="#fff" opacity=".75"/><circle cx="60" cy="52" r="1.0" fill="#fff" opacity=".72"/><circle cx="68" cy="50" r="0.9" fill="#fff" opacity=".65"/><circle cx="76" cy="51" r="1.0" fill="#fff" opacity=".7"/><circle cx="83" cy="56" r="1.1" fill="#fff" opacity=".72"/><circle cx="87" cy="63" r="0.9" fill="#fff" opacity=".65"/><circle cx="88" cy="71" r="1.0" fill="#fff" opacity=".68"/><circle cx="86" cy="79" r="1.1" fill="#fff" opacity=".72"/><circle cx="80" cy="86" r="1.0" fill="#fff" opacity=".7"/><circle cx="72" cy="89" r="0.9" fill="#fff" opacity=".65"/><circle cx="63" cy="87" r="1.0" fill="#fff" opacity=".68"/><circle cx="56" cy="82" r="1.1" fill="#fff" opacity=".72"/><circle cx="51" cy="74" r="0.9" fill="#fff" opacity=".65"/><circle cx="52" cy="65" r="1.0" fill="#fff" opacity=".68"/><circle cx="28" cy="45" r="1.1" fill="#fff" opacity=".55"/><circle cx="112" cy="95" r="0.9" fill="#fff" opacity=".45"/><circle cx="38" cy="100" r="1.0" fill="#fff" opacity=".5"/></g><circle cx="70" cy="70" r="62" fill="none" stroke="#fff" stroke-width="1" opacity=".14"/>`,
