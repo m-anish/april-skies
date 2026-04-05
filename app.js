@@ -603,9 +603,11 @@ if ('serviceWorker' in navigator) {
 setTrackTop(false);
 updateUI(0);
 
-// ── NEXT MONTH TEASER ─────────────────────────────────────────────────────
-// Renders the teaser pill if loader.js confirmed next month's file exists.
-// Exposed globally so loader.js can also call it if it resolves after app.js.
+// ── NEXT MONTH TEASER + PREV MONTH BACK BUTTON ────────────────────────────
+// renderNextTeaser: shows "May 2026 →" pill when next month's file exists.
+// renderPrevBack:   shows "← April 2026" pill when in ?preview= mode.
+// Both exposed globally so loader.js can call them after async resolution.
+
 function renderNextTeaser() {
   if (document.getElementById('next-month-teaser')) return;
   const next = window.SKY_NEXT;
@@ -613,14 +615,40 @@ function renderNextTeaser() {
   const btn = document.createElement('button');
   btn.id = 'next-month-teaser';
   btn.setAttribute('aria-label', `Preview ${next.month} ${next.year}`);
-  btn.innerHTML = `<span class="nt-icon">🔭</span><span class="nt-label">${next.month} ${next.year}</span><span class="nt-arrow">→</span>`;
+  btn.innerHTML = `<span class="nt-arrow nt-arrow-left">🔭</span><span class="nt-label">${next.month} ${next.year}</span><span class="nt-arrow">→</span>`;
   btn.addEventListener('click', () => {
     const slug = next.month.toLowerCase() + '-' + next.year;
     window.location.href = window.location.pathname + '?preview=' + slug;
   });
   document.body.appendChild(btn);
 }
+
+function renderPrevBack() {
+  if (document.getElementById('prev-month-back')) return;
+  // Only show when we're in preview mode
+  const params = new URLSearchParams(window.location.search);
+  if (!params.get('preview')) return;
+
+  // "Back" means: strip the preview param → load current calendar month
+  const MONTHS = ['january','february','march','april','may','june',
+                  'july','august','september','october','november','december'];
+  const now = new Date();
+  const curMonth = MONTHS[now.getMonth()];
+  const curYear  = now.getFullYear();
+  const curDisplay = curMonth.charAt(0).toUpperCase() + curMonth.slice(1);
+
+  const btn = document.createElement('button');
+  btn.id = 'prev-month-back';
+  btn.setAttribute('aria-label', `Back to ${curDisplay} ${curYear}`);
+  btn.innerHTML = `<span class="nt-arrow">←</span><span class="nt-label">${curDisplay} ${curYear}</span>`;
+  btn.addEventListener('click', () => {
+    window.location.href = window.location.pathname; // strips ?preview=
+  });
+  document.body.appendChild(btn);
+}
+
 window.SKY_RENDER_NEXT_TEASER = renderNextTeaser;
-renderNextTeaser(); // in case loader already resolved before app.js ran
+renderNextTeaser();
+renderPrevBack();
 
 }; // end SKY_INIT

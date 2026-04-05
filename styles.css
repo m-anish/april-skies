@@ -401,3 +401,27 @@ table.planner tr:hover td{background:rgba(255,255,255,0.02);}
 body.red-sky #next-month-teaser {
   background:rgba(30,4,0,0.92);border-color:rgba(200,60,20,0.2);
 }
+
+/* ── PREV MONTH BACK BUTTON ──────────────────────────────────────────────── */
+#prev-month-back {
+  position:fixed;bottom:48px;left:16px;z-index:500;
+  display:flex;align-items:center;gap:7px;
+  background:rgba(20,20,40,0.88);backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,0.12);border-radius:20px;
+  padding:7px 14px 7px 11px;
+  font-family:var(--sans);font-size:11px;color:var(--muted);
+  cursor:pointer;letter-spacing:.04em;
+  transition:border-color .2s,color .2s,background .2s,transform .15s;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+  animation:teaser-in .4s cubic-bezier(.34,1.56,.64,1) both;
+}
+#prev-month-back:hover {
+  border-color:rgba(255,255,255,0.28);color:var(--text);
+  background:rgba(30,30,55,0.95);transform:scale(1.04);
+}
+#prev-month-back .nt-arrow { font-size:13px;color:var(--dim);transition:transform .2s,color .2s; }
+#prev-month-back:hover .nt-arrow { transform:translateX(-3px);color:var(--muted); }
+body.red-sky #prev-month-back {
+  background:rgba(30,4,0,0.92);border-color:rgba(200,60,20,0.2);
+}
+
